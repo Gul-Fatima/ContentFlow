@@ -1,6 +1,6 @@
 # Agent.ai — AI Social Media Marketing Agent
 
-A full-stack MVP for learning **RAG / AI engineering and deployment**.
+A full-stack MVP for your marketing team.
 
 - **Frontend**: React + Vite + TypeScript + Tailwind (imported from a Figma UI, cleaned up and re-themed)
 - **Backend**: Python + Django + Django REST Framework
@@ -85,7 +85,7 @@ One key covers both **generation** (gemini-2.0-flash) and **embeddings**
 (text-embedding-004). Re-run `python manage.py seed_demo` or re-ingest documents
 to replace mock embeddings with real ones.
 
-## The RAG pipeline (this is the part to learn)
+## The RAG pipeline 
 
 Read `backend/apps/core/services/rag.py` top to bottom — it's the whole loop in
 ~120 readable lines:
