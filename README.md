@@ -1,157 +1,425 @@
-# Agent.ai — AI Social Media Marketing Agent
+# Ibda' — AI Social Media Marketing Agent
 
-A full-stack MVP for your marketing team.
+**Ibda'** is an AI-powered social media marketing agent designed to help businesses manage their social media marketing workflow in one place.
 
-- **Frontend**: React + Vite + TypeScript + Tailwind (imported from a Figma UI, cleaned up and re-themed)
-- **Backend**: Python + Django + Django REST Framework
-- **AI**: Google Gemini (free tier) with a deterministic **mock fallback** so everything runs with zero API keys
-- **Deployment**: Docker Compose (Postgres + backend), free-tier PaaS (Render/Railway) ready
+It helps users move from a **marketing goal** to **content creation, review, scheduling, and performance analysis**, while keeping the brand's identity and target audience in context.
 
 ---
 
-## Project layout
+## The Idea
 
-```
-├── src/                  # React frontend (Vite)
-│   ├── pages/            # Landing, Dashboard, ApprovalInbox, BrandMemory, ...
-│   ├── components/       # layout (Sidebar, Header) + ui primitives (Button, Card, ...)
-│   └── lib/              # utils (cn)
-├── backend/              # Django project
-│   ├── config/           # settings, urls, wsgi/asgi
-│   ├── apps/core/        # models, API views, serializers
-│   │   └── services/     # llm.py (Gemini + mock) and rag.py (the RAG pipeline)
-│   └── manage.py
-└── docker-compose.yml    # Postgres (pgvector) + backend
-```
+Social media marketing involves more than simply generating posts.
 
-## Quick start — frontend
+A marketing team needs to:
 
-```bash
-npm install
-npm run dev        # http://localhost:5173
-```
+* Decide what they want to achieve
+* Understand their target audience
+* Maintain a consistent brand voice
+* Create relevant content
+* Review content before publishing
+* Keep track of scheduled posts
+* Understand how their content performs
 
-The UI is fully functional with mock data. Quality gates:
+Ibda' brings these activities together and uses AI to assist throughout the process.
 
-```bash
-npm run build      # production build
-npm run typecheck  # tsc --noEmit
-npm run lint       # eslint
-```
-
-## Quick start — backend
-
-Requires Python 3.11+.
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env             # optional; defaults work without it
-python manage.py migrate
-python manage.py seed_demo       # demo goals, personas, one indexed brand doc
-python manage.py runserver       # http://localhost:8000
-```
-
-The API runs in **mock AI mode** until you add a Gemini key (see below). Every
-endpoint works; answers/plans are deterministic stand-ins.
-
-### Main API endpoints
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET/POST | `/api/goals/` | List / create goals |
-| POST | `/api/goals/generate/` | Goal → tasks + content drafts (uses brand voice + RAG context) |
-| GET/POST | `/api/tasks/` | Tasks |
-| GET/POST | `/api/content/` | AI drafts awaiting approval |
-| POST | `/api/content/{id}/approve/` `/reject/` | Approve / reject a draft |
-| GET/PUT | `/api/brand-memory/voice/` | Brand voice config |
-| GET/POST | `/api/brand-memory/documents/` | List / ingest a brand document (**chunks + embeds it**) |
-| POST | `/api/brand-memory/query/` | **RAG query**: retrieve + generate a grounded answer with sources |
-| GET/POST | `/api/personas/` | Audience personas |
-| POST | `/api/auth/register/` `/api/auth/token/` | Simple token auth |
-
-## Turn on real AI (free)
-
-1. Get a free API key at <https://aistudio.google.com/apikey> (no credit card).
-2. Add it to `backend/.env`:
-
-   ```
-   GEMINI_API_KEY=your-key-here
-   ```
-
-One key covers both **generation** (gemini-2.0-flash) and **embeddings**
-(text-embedding-004). Re-run `python manage.py seed_demo` or re-ingest documents
-to replace mock embeddings with real ones.
-
-## The RAG pipeline 
-
-Read `backend/apps/core/services/rag.py` top to bottom — it's the whole loop in
-~120 readable lines:
-
-1. **Chunk** — `chunk_text()` splits a document into overlapping pieces.
-2. **Embed** — each chunk becomes a vector (`llm.embed_many`).
-3. **Store** — chunk + vector saved as `DocumentChunk` rows.
-4. **Retrieve** — `retrieve()` ranks chunks by **cosine similarity** to your
-   query (`cosine_similarity()` is ~10 lines of pure math).
-5. **Generate** — `answer()` feeds the top-k chunks into the LLM as context so
-   the answer is grounded in *your* documents (no hallucinations from thin air).
-
-Try it: ingest a document, then `POST /api/brand-memory/query/` and inspect the
-`sources` array — that's retrieval working.
-
-### Upgrading to a real vector database (pgvector)
-
-Today retrieval scans chunks in Python — perfect for learning and small MVPs.
-For production, swap step 4 for pgvector, which does the **same cosine math**
-with an index:
-
-```sql
-SELECT content, embedding <=> %s AS distance
-FROM core_documentchunk
-ORDER BY distance LIMIT 5;
+```text
+              MARKETING GOAL
+                    │
+                    ▼
+             ┌─────────────┐
+             │    PLAN     │
+             └──────┬──────┘
+                    │
+                    ▼
+             ┌─────────────┐
+             │   CREATE    │
+             └──────┬──────┘
+                    │
+                    ▼
+             ┌─────────────┐
+             │   REVIEW    │
+             └──────┬──────┘
+                    │
+                    ▼
+             ┌─────────────┐
+             │   SCHEDULE  │
+             └──────┬──────┘
+                    │
+                    ▼
+             ┌─────────────┐
+             │   ANALYZE   │
+             └─────────────┘
 ```
 
-`docker-compose.yml` already uses the `pgvector/pgvector:pg16` image, so the
-extension is ready when you are. Steps: add a `vector(768)` column (migration
-with `CreateExtension('vector')`), drop the JSON embedding column, and run the
-query above in `retrieve()`.
+---
 
-## Deployment
+# What Can Ibda' Do?
 
-### Option A — Docker Compose (self-host)
+## 🎯 Set Marketing Goals
 
-```bash
-cd backend && cp .env.example .env   # fill in SECRET_KEY, GEMINI_API_KEY
-docker compose up --build
+Users can define what they want to achieve through their social media marketing.
+
+For example:
+
+> **Increase awareness of our new product among university students.**
+
+The agent uses the goal as the starting point for planning the marketing activity.
+
+---
+
+## 🧠 Remember the Brand
+
+Every brand has its own identity.
+
+Ibda' allows users to provide information about their brand so that the AI can take it into account when assisting with marketing tasks.
+
+This can include:
+
+* Brand voice
+* Tone
+* Product information
+* Brand guidelines
+* Existing brand documents
+
+Instead of treating every request as a completely new conversation, Ibda' maintains a **brand memory** that can be reused throughout the marketing workflow.
+
+```text
+                  BRAND
+                    │
+       ┌────────────┼────────────┐
+       ▼            ▼            ▼
+     Voice       Products     Guidelines
+       │            │            │
+       └────────────┼────────────┘
+                    ▼
+              BRAND MEMORY
+                    │
+                    ▼
+             AI assistance
 ```
 
-Brings up Postgres (pgvector) + backend at http://localhost:8000. The backend
-runs migrations + seeds demo data on boot.
+---
 
-### Option B — free-tier PaaS (Render / Railway)
+## 👥 Understand the Audience
 
-1. Push this repo to GitHub.
-2. Create a **Postgres** database (both platforms have a free tier).
-3. Create a **Web Service** from the repo root:
-   - Build: `docker build -t agentai-backend ./backend` (or use the Dockerfile)
-   - Or run natively: root dir `backend/`, build command
-     `pip install -r requirements.txt`, start command
-     `python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8000`
-4. Set env vars: `SECRET_KEY`, `DEBUG=False`, `DATABASE_URL` (from your Postgres),
-   `GEMINI_API_KEY`, `CORS_ALLOWED_ORIGINS` (your frontend URL).
+Different audiences require different types of communication.
 
-Frontend: build with `npm run build` and host `dist/` on Vercel/Netlify (free),
-or serve it from nginx in the same container later.
+Users can define audience personas that describe the people they want to reach.
 
-## Suggested learning path
+```text
+                    AUDIENCE
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+       Students     Developers    Businesses
+          │            │            │
+          ▼            ▼            ▼
+       Different communication styles
+```
 
-1. ✅ Frontend clean-up + design tokens (`brand-*` colors in `tailwind.config.js`)
-2. ✅ Django REST API matching the UI (goals, tasks, content, personas)
-3. ✅ Brand Memory as real RAG (chunk → embed → retrieve → generate)
-4. ▶ Wire the frontend to the API (replace mock data with `fetch` calls)
-5. ▶ Replace mock AI with your Gemini key and compare answers
-6. ▶ Swap in-memory retrieval for pgvector
-7. ▶ Add real auth (JWT or Django sessions) and per-user data
-8. ▶ Deploy + add payments/Stripe for the SaaS loop
+The selected audience can then be considered when planning and creating content.
+
+---
+
+## ✍️ Create Content with AI
+
+Ibda' helps generate social media content based on the marketing context.
+
+The AI can consider:
+
+```text
+       Marketing Goal
+              +
+         Brand Identity
+              +
+        Target Audience
+              +
+        Relevant Knowledge
+              │
+              ▼
+        AI CONTENT
+```
+
+This means the generated content is intended to be relevant to the **specific marketing situation**, rather than being completely generic.
+
+---
+
+# 🔎 Brand Knowledge
+
+Ibda' can use information supplied by the user to answer questions and assist with content.
+
+For example, a business could provide a product document containing information about its features, pricing, or positioning.
+
+When the user asks a question, Ibda' can find the relevant information from the stored knowledge and use it when generating the response.
+
+```text
+        Brand Information
+               │
+               ▼
+        ┌──────────────┐
+        │ Brand Memory │
+        └──────┬───────┘
+               │
+               │
+        User asks a question
+               │
+               ▼
+        Relevant information
+               │
+               ▼
+             AI
+               │
+               ▼
+        Grounded response
+```
+
+This helps the AI work with the **business's own information** instead of relying only on general knowledge.
+
+---
+
+# ✅ Human Approval
+
+Ibda' is designed to keep the user involved in the content workflow.
+
+AI-generated content can be reviewed before it moves forward.
+
+```text
+                 AI
+                 │
+                 ▼
+              Draft
+                 │
+                 ▼
+              Review
+             /      \
+            /        \
+       Approve       Reject
+          │             │
+          ▼             ▼
+       Continue       Revise
+```
+
+The AI assists with content creation; the user remains responsible for the final content decision.
+
+---
+
+# 📅 Content Scheduling
+
+Approved content can be organized into a publishing schedule.
+
+The scheduler gives users a centralized view of planned content and helps them manage when content should be published.
+
+```text
+       Content Ideas
+             │
+             ▼
+          Drafts
+             │
+             ▼
+          Approval
+             │
+             ▼
+          Schedule
+             │
+             ▼
+          Publish
+```
+
+---
+
+# 📊 Analytics
+
+Ibda' provides an analytics area where users can view the performance of their social media activity.
+
+The purpose is to help users understand what is happening with their content and use those insights when planning future marketing activity.
+
+```text
+       Published Content
+              │
+              ▼
+          Performance
+              │
+              ▼
+           Analytics
+              │
+              ▼
+       Future Decisions
+```
+
+---
+
+# How Ibda' Fits Together
+
+The main components work together as one marketing workflow.
+
+```text
+                         ┌───────────────┐
+                         │     USER      │
+                         └───────┬───────┘
+                                 │
+                  ┌──────────────┼──────────────┐
+                  │              │              │
+                  ▼              ▼              ▼
+              Marketing       Brand         Audience
+                Goals         Memory         Personas
+                  │              │              │
+                  └──────────────┼──────────────┘
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │   AI AGENT    │
+                         └───────┬───────┘
+                                 │
+                                 ▼
+                         Content Creation
+                                 │
+                                 ▼
+                            Approval
+                                 │
+                                 ▼
+                           Scheduling
+                                 │
+                                 ▼
+                            Analytics
+                                 │
+                                 └──────────────┐
+                                                │
+                                                ▼
+                                         Future Planning
+```
+
+---
+
+# High-Level Architecture
+
+Ibda' consists of three main parts:
+
+```text
+┌─────────────────────────────────────────────┐
+│                  USER                       │
+│                                             │
+│          Mobile App / Web App               │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────┐
+│                IBDA' AGENT                  │
+│                                             │
+│       Marketing Workflow + AI               │
+│                                             │
+│   Goals · Content · Personas · Approval     │
+│   Scheduling · Analytics · Brand Memory     │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────┐
+│             KNOWLEDGE & DATA                │
+│                                             │
+│       Brand Information + Application       │
+│                  Data                       │
+└─────────────────────────────────────────────┘
+```
+
+The user interacts with Ibda' through the application, while the agent coordinates the marketing workflow and uses the available brand and audience information to provide context-aware assistance.
+
+---
+
+# Main Features
+
+| Feature               | Purpose                                           |
+| --------------------- | ------------------------------------------------- |
+| **Marketing Goals**   | Define what the marketing activity should achieve |
+| **AI Agent**          | Assist with planning and content creation         |
+| **Brand Memory**      | Keep brand information available to the AI        |
+| **Audience Personas** | Define and understand target audiences            |
+| **AI Content**        | Generate context-aware social media content       |
+| **Approval**          | Review AI-generated content before continuing     |
+| **Scheduler**         | Organize planned content                          |
+| **Analytics**         | Understand content performance                    |
+
+---
+
+# Platforms
+
+Ibda' is designed as a universal application that can be used across:
+
+```text
+             ┌──────────────┐
+             │    IBDA'     │
+             └──────┬───────┘
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+        iOS      Android      Web
+```
+
+The goal is to provide the same core marketing experience across platforms.
+
+---
+
+# Technology
+
+Ibda' is built using modern web, mobile, backend, and AI technologies.
+
+**Frontend**
+
+* Expo
+* React Native
+* TypeScript
+* NativeWind
+
+**Backend**
+
+* Django
+* Django REST Framework
+
+**AI**
+
+* Google Gemini
+* Retrieval-Augmented Generation (RAG)
+
+**Data**
+
+* PostgreSQL
+* Vector-based knowledge storage
+
+---
+
+# Project Vision
+
+Ibda' aims to evolve into a complete **AI workspace for social media marketing**.
+
+The central idea is simple:
+
+> **Give the AI the goal, the brand, and the audience — then let it assist with the marketing workflow while keeping the human in control.**
+
+```text
+       GOAL
+        │
+        ▼
+      PLAN
+        │
+        ▼
+     CREATE
+        │
+        ▼
+     REVIEW
+        │
+        ▼
+    SCHEDULE
+        │
+        ▼
+     ANALYZE
+        │
+        └──────────────► IMPROVE
+```
+
+---
+
+## Project Status
+
+🚧 **Ibda' is currently under active development.**
+
+The core application interface and initial AI/brand-memory workflow are being developed as the foundation for the complete marketing agent.
+
+For the detailed development plan and technical implementation details, see **[`plan.md`](plan.md)**.
