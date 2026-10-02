@@ -1,60 +1,60 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
+import { Text, View, type TextProps, type ViewProps } from 'react-native';
 import { cn } from '../../lib/utils';
-type CardProps = React.HTMLAttributes<HTMLDivElement>;
-export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) =>
-  <div
-    ref={ref}
-    className={cn(
-      'rounded-lg border border-slate-200 bg-white text-brown shadow-sm',
-      className
-    )}
-    {...props} />
 
+export function Card({ className, ...props }: ViewProps & { className?: string }) {
+  return (
+    <View
+      className={cn(
+        'rounded-lg border border-slate-200 bg-white shadow-sm',
+        className
+      )}
+      {...props}
+    />
+  );
+}
 
-);
-Card.displayName = 'Card';
-export const CardHeader = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) =>
-  <div
-    ref={ref}
-    className={cn('flex flex-col space-y-1.5 p-6', className)}
-    {...props} />
+export function CardHeader({
+  className,
+  ...props
+}: ViewProps & { className?: string }) {
+  return <View className={cn('flex-col p-6', className)} {...props} />;
+}
 
+export function CardTitle({
+  className,
+  ...props
+}: TextProps & { className?: string }) {
+  return (
+    <Text
+      className={cn(
+        'text-base font-semibold leading-tight text-brown',
+        className
+      )}
+      {...props}
+    />
+  );
+}
 
-);
-CardHeader.displayName = 'CardHeader';
-export const CardTitle = forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) =>
-  <h3
-    ref={ref}
-    className={cn('font-semibold leading-none tracking-tight', className)}
-    {...props} />
+export function CardDescription({
+  className,
+  ...props
+}: TextProps & { className?: string }) {
+  return (
+    <Text className={cn('text-sm text-slate-500', className)} {...props} />
+  );
+}
 
-);
-CardTitle.displayName = 'CardTitle';
-export const CardDescription = forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) =>
-  <p ref={ref} className={cn('text-sm text-slate-500', className)} {...props} />
-);
-CardDescription.displayName = 'CardDescription';
-export const CardContent = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) =>
-  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+export function CardContent({
+  className,
+  ...props
+}: ViewProps & { className?: string }) {
+  return <View className={cn('p-6 pt-0', className)} {...props} />;
+}
 
-);
-CardContent.displayName = 'CardContent';
-export const CardFooter = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) =>
-  <div
-    ref={ref}
-    className={cn('flex items-center p-6 pt-0', className)}
-    {...props} />
-
-
-);
-CardFooter.displayName = 'CardFooter';
+export function CardFooter({
+  className,
+  ...props
+}: ViewProps & { className?: string }) {
+  return <View className={cn('flex-row items-center p-6 pt-0', className)} {...props} />;
+}

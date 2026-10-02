@@ -1,32 +1,38 @@
 import React, { forwardRef } from 'react';
+import { Text, TextInput, View, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/utils';
-export interface InputProps extends
-  React.InputHTMLAttributes<HTMLInputElement> {
+
+export interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
+  className?: string;
+  containerClassName?: string;
 }
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, ...props }, ref) => {
+
+export const Input = forwardRef<TextInput, InputProps>(
+  ({ className, containerClassName, label, error, ...props }, ref) => {
     return (
-      <div className="w-full">
-        {label &&
-        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block text-slate-700">
+      <View className={cn('w-full', containerClassName)}>
+        {label ? (
+          <Text className="mb-2 text-sm font-medium text-slate-700">
             {label}
-          </label>
-        }
-        <input
-          type={type}
+          </Text>
+        ) : null}
+        <TextInput
+          ref={ref}
+          placeholderTextColor="#94A3B8"
           className={cn(
-            'flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-rose-500 focus-visible:ring-rose-500',
+            'h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-brown',
+            error && 'border-rose-500',
             className
           )}
-          ref={ref}
-          {...props} />
-        
-        {error && <p className="text-xs text-rose-500 mt-1">{error}</p>}
-      </div>);
-
+          {...props}
+        />
+        {error ? (
+          <Text className="mt-1 text-xs text-rose-500">{error}</Text>
+        ) : null}
+      </View>
+    );
   }
 );
 Input.displayName = 'Input';

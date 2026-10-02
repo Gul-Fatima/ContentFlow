@@ -1,56 +1,76 @@
+import { Pressable, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Bell, Search } from 'lucide-react-native';
 import { Avatar } from '../ui/Avatar';
-import { Button } from '../ui/Button';
-import { Bell, Search } from 'lucide-react';
+import { iconColor } from '../../lib/theme';
+
+const AVATAR_SRC =
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
+
 interface HeaderProps {
   title: string;
-  onNavigate?: (page: string) => void;
 }
-export const Header = ({ title, onNavigate }: HeaderProps) => {
-  // Hardcoded unread count for the indicator since state moved to the page
+
+export function Header({ title }: HeaderProps) {
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  // Mirrors the web app's `hidden md:block` — the search box and the
+  // name/role block only appear once there's room for them.
+  const isWide = width >= 768;
   const hasUnread = true;
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-sm">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold text-brown">{title}</h1>
-      </div>
+    <View className="sticky top-0 z-30 w-full flex-row items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+      <View className="flex-1 flex-row items-center">
+        <Text
+          className="text-lg font-semibold text-brown"
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
+      </View>
 
-      <div className="flex items-center gap-4">
-        <div className="relative hidden md:block">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search tasks, goals..."
-            className="h-9 w-64 rounded-md border border-slate-200 bg-cream pl-9 pr-4 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" />
-          
-        </div>
+      <View className="flex-row items-center gap-3">
+        {isWide && (
+          <View className="relative justify-center">
+            <View className="absolute left-2.5 z-10">
+              <Search size={16} color={iconColor.muted} />
+            </View>
+            <TextInput
+              placeholder="Search tasks, goals..."
+              placeholderTextColor="#94A3B8"
+              className="h-9 w-64 rounded-md border border-slate-200 bg-cream pl-9 pr-4 text-sm text-brown"
+            />
+          </View>
+        )}
 
-        <div className="relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative"
-            onClick={() => onNavigate?.('notifications')}>
-            
-            <Bell className="h-5 w-5" />
-            {hasUnread &&
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
-            }
-          </Button>
-        </div>
+        <Pressable
+          onPress={() => router.push('/notifications')}
+          className="relative h-9 w-9 items-center justify-center rounded-md active:bg-slate-100"
+        >
+          <Bell size={20} color={iconColor.subtle} />
+          {hasUnread && (
+            <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
+          )}
+        </Pressable>
 
-        <div className="h-6 w-px bg-slate-200" />
+        <View className="h-6 w-px bg-slate-200" />
 
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden md:block">
-            <p className="text-sm font-medium text-brown">Alex Morgan</p>
-            <p className="text-xs text-slate-500">Growth Lead</p>
-          </div>
-          <Avatar
-            fallback="AM"
-            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" />
-          
-        </div>
-      </div>
-    </header>);
-
-};
+        <Pressable
+          onPress={() => router.push('/profile')}
+          className="flex-row items-center gap-3 active:opacity-80"
+        >
+          {isWide && (
+            <View className="items-end">
+              <Text className="text-sm font-medium text-brown">
+                Alex Morgan
+              </Text>
+              <Text className="text-xs text-slate-500">Growth Lead</Text>
+            </View>
+          )}
+          <Avatar fallback="AM" src={AVATAR_SRC} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}

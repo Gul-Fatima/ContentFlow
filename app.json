@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Agent.ai",
+    "slug": "agent-ai",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "agentai",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ai.agent.app"
+    },
+    "android": {
+      "package": "ai.agent.app",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
