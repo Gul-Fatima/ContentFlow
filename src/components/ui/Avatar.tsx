@@ -34,7 +34,7 @@ export function Avatar({
     <View className={cn('relative', className)}>
       <View
         className={cn(
-          'relative items-center justify-center overflow-hidden rounded-full bg-slate-100',
+          'relative items-center justify-center overflow-hidden rounded-pill bg-surface-muted',
           sizes[size]
         )}
       >
@@ -46,15 +46,15 @@ export function Avatar({
             accessibilityLabel={fallback}
           />
         ) : (
-          <View className="h-full w-full items-center justify-center bg-brand-100">
-            <Text className={cn('font-medium text-brand-700', textSizes[size])}>
+          <View className="h-full w-full items-center justify-center bg-primary-100">
+            <Text className={cn('font-medium text-primary-700', textSizes[size])}>
               {fallback}
             </Text>
           </View>
         )}
       </View>
       {showStatus && (
-        <View className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+        <View className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-pill border-2 border-white bg-success" />
       )}
     </View>
   );

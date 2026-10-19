@@ -39,7 +39,7 @@ import { Gradient } from '../../src/components/ui/Gradient';
 import { Grid } from '../../src/components/ui/Grid';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
-import { iconColor, palette } from '../../src/lib/theme';
+import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
 
 type Platform = 'twitter' | 'instagram' | 'linkedin' | 'email';
 
@@ -76,26 +76,26 @@ const platformConfig: Record<
 > = {
   twitter: {
     Icon: AtSign,
-    color: '#0EA5E9',
-    bg: 'bg-sky-50 border-sky-200',
+    color: PLATFORM_COLORS.twitter,
+    bg: 'bg-accent-twitter-soft border-accent-twitter-border',
     label: 'Twitter',
   },
   instagram: {
     Icon: Camera,
-    color: '#DB2777',
-    bg: 'bg-pink-50 border-pink-200',
+    color: PLATFORM_COLORS.instagram,
+    bg: 'bg-accent-instagram-soft border-accent-instagram-border',
     label: 'Instagram',
   },
   linkedin: {
     Icon: Briefcase,
-    color: '#1D4ED8',
-    bg: 'bg-blue-50 border-blue-200',
+    color: PLATFORM_COLORS.linkedin,
+    bg: 'bg-accent-linkedin-soft border-accent-linkedin-border',
     label: 'LinkedIn',
   },
   email: {
     Icon: Mail,
-    color: '#475569',
-    bg: 'bg-cream border-slate-200',
+    color: PLATFORM_COLORS.email,
+    bg: 'bg-surface-page border-surface-border',
     label: 'Email',
   },
 };
@@ -277,10 +277,10 @@ export default function SchedulerScreen() {
   const totalDrafts = posts.filter((p) => p.status === 'draft').length;
 
   const stats = [
-    { label: 'Scheduled', value: totalScheduled, color: 'text-brand-600', bg: 'bg-brand-50' },
-    { label: 'Drafts', value: totalDrafts, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'This Week', value: posts.length, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Best Day', value: 'Tuesday', color: 'text-brand-600', bg: 'bg-brand-50' },
+    { label: 'Scheduled', value: totalScheduled, color: 'text-primary-600', bg: 'bg-primary-50' },
+    { label: 'Drafts', value: totalDrafts, color: 'text-warning', bg: 'bg-warning-soft' },
+    { label: 'This Week', value: posts.length, color: 'text-success', bg: 'bg-success-soft' },
+    { label: 'Best Day', value: 'Tuesday', color: 'text-primary-600', bg: 'bg-primary-50' },
   ];
 
   return (
@@ -288,10 +288,10 @@ export default function SchedulerScreen() {
       {/* Header */}
       <View className="flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-brown md:text-3xl">
+          <Text className="text-2xl font-bold text-ink md:text-3xl">
             Content Scheduler
           </Text>
-          <Text className="text-slate-500">
+          <Text className="text-ink-subtle">
             Plan, schedule, and manage your content calendar across all
             platforms.
           </Text>
@@ -319,7 +319,7 @@ export default function SchedulerScreen() {
               stat.bg
             )}
           >
-            <Text className="text-sm font-medium text-slate-600">
+            <Text className="text-sm font-medium text-ink-muted">
               {stat.label}
             </Text>
             <Text className={cn('text-lg font-bold', stat.color)}>
@@ -347,14 +347,14 @@ export default function SchedulerScreen() {
                 className={cn(
                   'flex-row items-center rounded-full px-4 py-2',
                   isActive
-                    ? 'bg-brand-900'
-                    : 'border border-slate-200 bg-white active:bg-slate-100'
+                    ? 'bg-sidebar'
+                    : 'border border-surface-border bg-white active:bg-surface-muted'
                 )}
               >
                 <Text
                   className={cn(
                     'text-sm font-medium',
-                    isActive ? 'text-white' : 'text-slate-600'
+                    isActive ? 'text-white' : 'text-ink-muted'
                   )}
                 >
                   {filter.label}
@@ -363,13 +363,13 @@ export default function SchedulerScreen() {
                   <View
                     className={cn(
                       'ml-2 items-center justify-center rounded-full px-2 py-0.5',
-                      isActive ? 'bg-white/20' : 'bg-slate-100'
+                      isActive ? 'bg-white/20' : 'bg-surface-muted'
                     )}
                   >
                     <Text
                       className={cn(
                         'text-xs',
-                        isActive ? 'text-white' : 'text-slate-600'
+                        isActive ? 'text-white' : 'text-ink-muted'
                       )}
                     >
                       {count}
@@ -381,7 +381,7 @@ export default function SchedulerScreen() {
           })}
         </View>
 
-        <View className="flex-row overflow-hidden rounded-lg border border-slate-200">
+        <View className="flex-row overflow-hidden rounded-lg border border-surface-border">
           {(['week', 'list'] as const).map((mode) => {
             const isActive = viewMode === mode;
             const Icon = mode === 'week' ? Calendar : GripVertical;
@@ -391,7 +391,7 @@ export default function SchedulerScreen() {
                 onPress={() => setViewMode(mode)}
                 className={cn(
                   'flex-row items-center px-3 py-1.5',
-                  isActive ? 'bg-brand-600' : 'bg-white active:bg-cream'
+                  isActive ? 'bg-primary-600' : 'bg-white active:bg-surface-muted'
                 )}
               >
                 <Icon
@@ -401,7 +401,7 @@ export default function SchedulerScreen() {
                 <Text
                   className={cn(
                     'ml-1 text-xs font-medium',
-                    isActive ? 'text-white' : 'text-slate-600'
+                    isActive ? 'text-white' : 'text-ink-muted'
                   )}
                 >
                   {mode === 'week' ? 'Week' : 'List'}
@@ -416,16 +416,16 @@ export default function SchedulerScreen() {
         {/* Calendar / list */}
         <View style={{ flex: 3 }}>
           {viewMode === 'week' ? (
-            <View className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <View className="overflow-hidden rounded-lg border border-surface-border bg-white">
               {/* Week header */}
-              <View className="flex-row items-center justify-between border-b border-slate-100 bg-cream px-4 py-3">
-                <Pressable className="rounded-md p-1.5 active:bg-slate-200">
+              <View className="flex-row items-center justify-between border-b border-surface-muted bg-surface-page px-4 py-3">
+                <Pressable className="rounded-md p-1.5 active:bg-surface-border">
                   <ChevronLeft size={18} color={iconColor.subtle} />
                 </Pressable>
-                <Text className="text-sm font-semibold text-brown">
+                <Text className="text-sm font-semibold text-ink">
                   Feb 9 – Feb 15, 2026
                 </Text>
-                <Pressable className="rounded-md p-1.5 active:bg-slate-200">
+                <Pressable className="rounded-md p-1.5 active:bg-surface-border">
                   <ChevronRight size={18} color={iconColor.subtle} />
                 </Pressable>
               </View>
@@ -433,31 +433,31 @@ export default function SchedulerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View>
                   {/* Day headers */}
-                  <View className="flex-row border-b border-slate-100">
+                  <View className="flex-row border-b border-surface-muted">
                     <View style={{ width: 60 }} />
                     {weekDays.map((day, i) => (
                       <View
                         key={day}
                         style={{ width: 110 }}
                         className={cn(
-                          'items-center border-l border-slate-100 p-3',
-                          i === 0 && 'bg-brand-50'
+                          'items-center border-l border-surface-muted p-3',
+                          i === 0 && 'bg-primary-50'
                         )}
                       >
-                        <Text className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <Text className="text-caption font-bold uppercase tracking-wider text-ink-faint">
                           {day}
                         </Text>
                         <Text
                           className={cn(
                             'text-lg font-bold',
-                            i === 0 ? 'text-brand-600' : 'text-brown'
+                            i === 0 ? 'text-primary-600' : 'text-ink'
                           )}
                         >
                           {weekDates[i].split(' ')[1]}
                         </Text>
                         {postCountByDay[i] > 0 && (
-                          <View className="mt-1 rounded-full bg-slate-100 px-1.5 py-0.5">
-                            <Text className="text-[9px] font-semibold text-slate-500">
+                          <View className="mt-1 rounded-full bg-surface-muted px-1.5 py-0.5">
+                            <Text className="text-caption font-semibold text-ink-subtle">
                               {postCountByDay[i]} post
                               {postCountByDay[i] > 1 ? 's' : ''}
                             </Text>
@@ -471,14 +471,14 @@ export default function SchedulerScreen() {
                   {timeSlots.map((hour) => (
                     <View
                       key={hour}
-                      className="flex-row border-b border-slate-50"
+                      className="flex-row border-b border-surface-page"
                       style={{ minHeight: 56 }}
                     >
                       <View
                         style={{ width: 60 }}
                         className="items-end pr-3 pt-2"
                       >
-                        <Text className="text-[11px] font-medium text-slate-400">
+                        <Text className="text-caption font-medium text-ink-faint">
                           {formatHour(hour)}
                         </Text>
                       </View>
@@ -489,8 +489,8 @@ export default function SchedulerScreen() {
                             key={dayIdx}
                             style={{ width: 110 }}
                             className={cn(
-                              'border-l border-slate-50 p-1',
-                              dayIdx === 0 && 'bg-brand-50'
+                              'border-l border-surface-page p-1',
+                              dayIdx === 0 && 'bg-primary-50'
                             )}
                           >
                             {slotPosts.map((post) => {
@@ -507,24 +507,24 @@ export default function SchedulerScreen() {
                                     'mb-1 w-full rounded-md border px-2 py-1.5',
                                     config.bg,
                                     isSelected &&
-                                      'border-brand-400 bg-brand-50'
+                                      'border-primary-400 bg-primary-50'
                                   )}
                                 >
                                   <View className="mb-0.5 flex-row items-center gap-1">
                                     <Icon size={10} color={config.color} />
-                                    <Text className="text-[11px] font-semibold text-slate-700">
+                                    <Text className="text-caption font-semibold text-ink-muted">
                                       {post.time}
                                     </Text>
                                     {post.status === 'draft' && (
-                                      <View className="ml-auto rounded bg-amber-200 px-1">
-                                        <Text className="text-[8px] font-bold text-amber-700">
+                                      <View className="ml-auto rounded bg-warning-soft px-1">
+                                        <Text className="text-caption font-bold text-warning-text">
                                           DRAFT
                                         </Text>
                                       </View>
                                     )}
                                   </View>
                                   <Text
-                                    className="text-[11px] text-slate-600"
+                                    className="text-caption text-ink-muted"
                                     numberOfLines={1}
                                   >
                                     {post.content}
@@ -533,8 +533,8 @@ export default function SchedulerScreen() {
                               );
                             })}
                             {slotPosts.length === 0 && (
-                              <Pressable className="items-center justify-center rounded-md border border-dashed border-transparent py-2 active:border-slate-200 active:bg-cream">
-                                <Plus size={12} color="#CBD5E1" />
+                              <Pressable className="items-center justify-center rounded-md border border-dashed border-transparent py-2 active:border-surface-border active:bg-surface-muted">
+                                <Plus size={12} color={colors.ink.faint} />
                               </Pressable>
                             )}
                           </View>
@@ -558,7 +558,7 @@ export default function SchedulerScreen() {
                     >
                       <Card
                         className={cn(
-                          isSelected && 'border-brand-300 bg-brand-50'
+                          isSelected && 'border-primary-300 bg-primary-50'
                         )}
                       >
                         <CardContent className="p-4">
@@ -573,7 +573,7 @@ export default function SchedulerScreen() {
                             </View>
                             <View className="min-w-0 flex-1">
                               <View className="mb-1 flex-row flex-wrap items-center gap-2">
-                                <Text className="text-sm font-semibold text-brown">
+                                <Text className="text-sm font-semibold text-ink">
                                   {config.label}
                                 </Text>
                                 <Badge
@@ -594,7 +594,7 @@ export default function SchedulerScreen() {
                                 )}
                               </View>
                               <Text
-                                className="text-sm text-slate-600"
+                                className="text-sm text-ink-muted"
                                 numberOfLines={1}
                               >
                                 {post.content}
@@ -602,13 +602,13 @@ export default function SchedulerScreen() {
                               <View className="mt-2 flex-row items-center gap-3">
                                 <View className="flex-row items-center gap-1">
                                   <Calendar size={12} color={iconColor.muted} />
-                                  <Text className="text-xs text-slate-400">
+                                  <Text className="text-xs text-ink-faint">
                                     {weekDays[post.day]}, {weekDates[post.day]}
                                   </Text>
                                 </View>
                                 <View className="flex-row items-center gap-1">
                                   <Clock size={12} color={iconColor.muted} />
-                                  <Text className="text-xs text-slate-400">
+                                  <Text className="text-xs text-ink-faint">
                                     {post.time}
                                   </Text>
                                 </View>
@@ -622,7 +622,7 @@ export default function SchedulerScreen() {
                                 <Edit3 size={14} color={iconColor.muted} />
                               </Button>
                               <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
-                                <Trash2 size={14} color="#FB7185" />
+                                <Trash2 size={14} color={colors.chart.c5} />
                               </Button>
                             </View>
                           </View>
@@ -641,7 +641,7 @@ export default function SchedulerScreen() {
           <Card>
             <CardHeader>
               <View className="flex-row items-center gap-2">
-                <CalendarClock size={16} color={palette.brand[500]} />
+                <CalendarClock size={16} color={colors.primary[500]} />
                 <CardTitle className="text-base">Up Next</CardTitle>
               </View>
             </CardHeader>
@@ -655,7 +655,7 @@ export default function SchedulerScreen() {
                     className={cn(
                       'flex-row items-center gap-3 px-4 py-3',
                       i !== upcomingPosts.length - 1 &&
-                        'border-b border-slate-100'
+                        'border-b border-surface-muted'
                     )}
                   >
                     <View
@@ -668,12 +668,12 @@ export default function SchedulerScreen() {
                     </View>
                     <View className="min-w-0 flex-1">
                       <Text
-                        className="text-xs font-medium text-brown"
+                        className="text-xs font-medium text-ink"
                         numberOfLines={1}
                       >
                         {post.content}
                       </Text>
-                      <Text className="text-[10px] text-slate-400">
+                      <Text className="text-caption text-ink-faint">
                         {weekDays[post.day]} · {post.time}
                       </Text>
                     </View>
@@ -684,8 +684,8 @@ export default function SchedulerScreen() {
           </Card>
 
           <Gradient
-            colors={[palette.brand[50], palette.brand[100]]}
-            className="rounded-lg border border-brand-100 shadow-sm"
+            colors={[colors.primary[50], colors.primary[100]]}
+            className="rounded-lg border border-primary-100 shadow-sm"
           >
             <CardHeader>
               <View className="flex-row items-center gap-2">
@@ -703,14 +703,14 @@ export default function SchedulerScreen() {
                 return (
                   <View
                     key={i}
-                    className="flex-row items-center gap-3 rounded-lg border border-brand-100 bg-white/70 p-2.5"
+                    className="flex-row items-center gap-3 rounded-lg border border-primary-100 bg-white/70 p-2.5"
                   >
                     <Icon size={16} color={config.color} />
                     <View className="flex-1">
-                      <Text className="text-xs font-semibold text-brown">
+                      <Text className="text-xs font-semibold text-ink">
                         {bt.day}, {bt.time}
                       </Text>
-                      <Text className="text-[10px] text-slate-500">
+                      <Text className="text-caption text-ink-subtle">
                         {bt.reason}
                       </Text>
                     </View>
@@ -731,14 +731,14 @@ export default function SchedulerScreen() {
           <Card>
             <CardContent className="p-4">
               <View className="flex-row items-center gap-3">
-                <View className="h-9 w-9 items-center justify-center rounded-lg bg-slate-100">
+                <View className="h-9 w-9 items-center justify-center rounded-lg bg-surface-muted">
                   <Globe size={16} color={iconColor.subtle} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold text-brown">
+                  <Text className="text-xs font-semibold text-ink">
                     Timezone
                   </Text>
-                  <Text className="text-[11px] text-slate-500">
+                  <Text className="text-caption text-ink-subtle">
                     PST (UTC-8) · San Francisco
                   </Text>
                 </View>

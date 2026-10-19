@@ -1,6 +1,7 @@
 import { Drawer } from 'expo-router/drawer';
 import { useWindowDimensions } from 'react-native';
 import { Sidebar } from '../../src/components/layout/Sidebar';
+import { colors } from '../../src/lib/theme';
 import { SidebarProvider, useSidebar } from '../../src/context/SidebarContext';
 
 function AppDrawer() {
@@ -24,13 +25,13 @@ function AppDrawer() {
         drawerType: isMobile ? 'front' : 'permanent',
         drawerStyle: {
           width: drawerWidth,
-          backgroundColor: '#0F172A',
+          backgroundColor: colors.sidebar.DEFAULT,
           borderRightWidth: 0,
         },
         // `overlayStyle` is a DrawerView prop, not a screen option in this
         // drawer version; overlayColor applies the same 0.4 overlay tint.
         overlayColor: 'rgba(0,0,0,0.4)',
-        sceneStyle: { flex: 1, backgroundColor: '#F8FAFC' },
+        sceneStyle: { flex: 1, backgroundColor: colors.surface.page },
         swipeEdgeWidth: 60,
       }}
     >

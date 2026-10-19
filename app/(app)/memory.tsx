@@ -15,7 +15,7 @@ import { Grid } from '../../src/components/ui/Grid';
 import { Screen } from '../../src/components/layout/Screen';
 import { Textarea } from '../../src/components/ui/Textarea';
 import { cn } from '../../src/lib/utils';
-import { iconColor, palette } from '../../src/lib/theme';
+import { colors, iconColor, palette } from '../../src/lib/theme';
 
 type MemoryTab = 'voice' | 'rules' | 'personas' | 'competitors';
 
@@ -68,10 +68,10 @@ export default function BrandMemoryScreen() {
     >
       <View className="flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <View>
-          <Text className="text-2xl font-bold text-brown md:text-3xl">
+          <Text className="text-2xl font-bold text-ink md:text-3xl">
             Brand Memory
           </Text>
-          <Text className="text-slate-500">
+          <Text className="text-ink-subtle">
             Configure how the AI represents your brand across channels.
           </Text>
         </View>
@@ -92,14 +92,14 @@ export default function BrandMemoryScreen() {
               className={cn(
                 'rounded-full px-4 py-2',
                 isActive
-                  ? 'bg-brand-900'
-                  : 'border border-slate-200 bg-white active:bg-slate-100'
+                  ? 'bg-sidebar'
+                  : 'border border-surface-border bg-white active:bg-surface-muted'
               )}
             >
               <Text
                 className={cn(
                   'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-slate-600'
+                  isActive ? 'text-white' : 'text-ink-muted'
                 )}
               >
                 {tab.label}
@@ -142,10 +142,10 @@ export default function BrandMemoryScreen() {
                 {TONE_SLIDERS.map((tone) => (
                   <View key={tone.key} className="gap-3">
                     <View className="flex-row justify-between">
-                      <Text className="text-sm font-medium text-slate-700">
+                      <Text className="text-sm font-medium text-ink-muted">
                         {tone.left}
                       </Text>
-                      <Text className="text-sm font-medium text-slate-700">
+                      <Text className="text-sm font-medium text-ink-muted">
                         {tone.right}
                       </Text>
                     </View>
@@ -157,9 +157,9 @@ export default function BrandMemoryScreen() {
                       onValueChange={(value) =>
                         setTones((prev) => ({ ...prev, [tone.key]: value }))
                       }
-                      minimumTrackTintColor={palette.brand[600]}
-                      maximumTrackTintColor="#E2E8F0"
-                      thumbTintColor={palette.brand[600]}
+                      minimumTrackTintColor={colors.primary[600]}
+                      maximumTrackTintColor={colors.surface.border}
+                      thumbTintColor={colors.primary[600]}
                       style={{ width: '100%' }}
                     />
                   </View>
@@ -174,7 +174,7 @@ export default function BrandMemoryScreen() {
               </CardHeader>
               <CardContent className="gap-6">
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-slate-700">
+                  <Text className="mb-2 text-sm font-medium text-ink-muted">
                     Power Words (Use often)
                   </Text>
                   <View className="mb-2 flex-row flex-wrap gap-2">
@@ -183,16 +183,16 @@ export default function BrandMemoryScreen() {
                         {word}
                       </Badge>
                     ))}
-                    <Pressable className="flex-row items-center justify-center rounded-full border border-dashed border-slate-300 px-3 py-1 active:bg-cream">
+                    <Pressable className="flex-row items-center justify-center rounded-full border border-dashed border-surface-border px-3 py-1 active:bg-surface-muted">
                       <Plus size={12} color={iconColor.subtle} />
-                      <Text className="ml-1 text-xs font-medium text-slate-500">
+                      <Text className="ml-1 text-xs font-medium text-ink-subtle">
                         Add
                       </Text>
                     </Pressable>
                   </View>
                 </View>
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-slate-700">
+                  <Text className="mb-2 text-sm font-medium text-ink-muted">
                     Negative Words (Avoid)
                   </Text>
                   <View className="flex-row flex-wrap gap-2">
@@ -201,9 +201,9 @@ export default function BrandMemoryScreen() {
                         {word}
                       </Badge>
                     ))}
-                    <Pressable className="flex-row items-center justify-center rounded-full border border-dashed border-slate-300 px-3 py-1 active:bg-cream">
+                    <Pressable className="flex-row items-center justify-center rounded-full border border-dashed border-surface-border px-3 py-1 active:bg-surface-muted">
                       <Plus size={12} color={iconColor.subtle} />
-                      <Text className="ml-1 text-xs font-medium text-slate-500">
+                      <Text className="ml-1 text-xs font-medium text-ink-subtle">
                         Add
                       </Text>
                     </Pressable>
@@ -231,9 +231,9 @@ export default function BrandMemoryScreen() {
               {RULES.map((rule, i) => (
                 <View
                   key={i}
-                  className="flex-row items-center justify-between rounded-lg border border-slate-100 bg-cream p-3"
+                  className="flex-row items-center justify-between rounded-lg border border-surface-muted bg-surface-page p-3"
                 >
-                  <Text className="flex-1 pr-3 text-slate-700">{rule}</Text>
+                  <Text className="flex-1 pr-3 text-ink-muted">{rule}</Text>
                   <Button variant="ghost" size="sm">
                     <Trash2 size={16} color={iconColor.muted} />
                   </Button>
@@ -255,7 +255,7 @@ export default function BrandMemoryScreen() {
         <Grid columns={2} gutter={24}>
           {PERSONAS.map((persona) => (
             <Card key={persona.name} className="relative overflow-hidden">
-              <View className="absolute left-0 top-0 h-full w-1 bg-brand-500" />
+              <View className="absolute left-0 top-0 h-full w-1 bg-primary-500" />
               <CardHeader>
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1 flex-row items-center gap-2">
@@ -270,18 +270,18 @@ export default function BrandMemoryScreen() {
               </CardHeader>
               <CardContent className="gap-4">
                 <View>
-                  <Text className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <Text className="text-xs font-bold uppercase tracking-wider text-ink-subtle">
                     Pain Points
                   </Text>
-                  <Text className="mt-1 text-sm text-slate-700">
+                  <Text className="mt-1 text-sm text-ink-muted">
                     {persona.pain}
                   </Text>
                 </View>
                 <View>
-                  <Text className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <Text className="text-xs font-bold uppercase tracking-wider text-ink-subtle">
                     Goals
                   </Text>
-                  <Text className="mt-1 text-sm text-slate-700">
+                  <Text className="mt-1 text-sm text-ink-muted">
                     Efficiency, Scale, Automation
                   </Text>
                 </View>
@@ -291,10 +291,10 @@ export default function BrandMemoryScreen() {
 
           <Card className="min-h-[200px] items-center justify-center border-dashed">
             <Pressable className="items-center p-6 active:opacity-70">
-              <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-brand-50">
+              <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary-50">
                 <Plus size={24} color={iconColor.primary} />
               </View>
-              <Text className="font-medium text-brown">Add Persona</Text>
+              <Text className="font-medium text-ink">Add Persona</Text>
             </Pressable>
           </Card>
         </Grid>
@@ -309,7 +309,7 @@ export default function BrandMemoryScreen() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Text className="text-sm text-slate-500">
+            <Text className="text-sm text-ink-subtle">
               No competitors tracked yet. Add one to compare positioning and
               tone.
             </Text>

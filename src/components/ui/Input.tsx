@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { Text, TextInput, View, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/utils';
+import { colors } from '../../lib/theme';
 
 export interface InputProps extends TextInputProps {
   label?: string;
@@ -14,22 +15,22 @@ export const Input = forwardRef<TextInput, InputProps>(
     return (
       <View className={cn('w-full', containerClassName)}>
         {label ? (
-          <Text className="mb-2 text-sm font-medium text-slate-700">
+          <Text className="mb-2 text-sm font-medium text-ink-muted">
             {label}
           </Text>
         ) : null}
         <TextInput
           ref={ref}
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={colors.ink.placeholder}
           className={cn(
-            'h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-brown',
-            error && 'border-rose-500',
+            'h-10 w-full rounded-control border border-surface-border bg-white px-3 text-sm text-ink',
+            error && 'border-danger',
             className
           )}
           {...props}
         />
         {error ? (
-          <Text className="mt-1 text-xs text-rose-500">{error}</Text>
+          <Text className="mt-1 text-xs text-danger">{error}</Text>
         ) : null}
       </View>
     );

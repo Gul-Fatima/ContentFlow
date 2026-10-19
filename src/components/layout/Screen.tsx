@@ -23,7 +23,7 @@ export function Screen({
   const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 bg-cream" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-surface-page" style={{ paddingTop: insets.top }}>
       <Header title={title} />
       {scroll ? (
         <ScrollView

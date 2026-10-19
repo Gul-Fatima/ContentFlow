@@ -10,11 +10,9 @@ import {
 import { useNavigation, useRouter } from 'expo-router';
 import { Bell, Menu, Search } from 'lucide-react-native';
 import { Avatar } from '../ui/Avatar';
-import { iconColor } from '../../lib/theme';
+import { colors, iconColor } from '../../lib/theme';
 import { ROUTES } from '../../constants/routes';
-
-const AVATAR_SRC =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
+import { MOCK_USER } from '../../constants/user';
 
 interface HeaderProps {
   title: string;
@@ -62,20 +60,20 @@ export function Header({ title }: HeaderProps) {
   }, [isMobile, openNavigation]);
 
   return (
-    <View className="sticky top-0 z-30 w-full flex-row items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+    <View className="sticky top-0 z-30 w-full flex-row items-center justify-between border-b border-surface-border bg-white px-4 py-3">
       <View className="flex-1 flex-row items-center">
         {isMobile && (
           <Pressable
             onPress={openNavigation}
             accessibilityRole="button"
             accessibilityLabel="Open navigation menu"
-            className="-my-2 -ml-1 mr-1 h-11 w-11 items-center justify-center rounded-md active:bg-slate-100"
+            className="-my-2 -ml-1 mr-1 h-11 w-11 items-center justify-center rounded-md active:bg-surface-muted"
           >
             <Menu size={22} color={iconColor.subtle} />
           </Pressable>
         )}
         <Text
-          className="text-lg font-semibold text-brown"
+          className="text-lg font-semibold text-ink"
           numberOfLines={1}
         >
           {title}
@@ -90,15 +88,15 @@ export function Header({ title }: HeaderProps) {
             </View>
             <TextInput
               placeholder="Search tasks, goals..."
-              placeholderTextColor="#94A3B8"
-              className="h-9 w-64 rounded-md border border-slate-200 bg-cream pl-9 pr-4 text-sm text-brown"
+              placeholderTextColor={colors.ink.placeholder}
+              className="h-9 w-64 rounded-md border border-surface-border bg-surface-page pl-9 pr-4 text-sm text-ink"
             />
           </View>
         ) : (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Search"
-            className="h-9 w-9 items-center justify-center rounded-md active:bg-slate-100"
+            className="h-9 w-9 items-center justify-center rounded-md active:bg-surface-muted"
           >
             <Search size={20} color={iconColor.subtle} />
           </Pressable>
@@ -106,15 +104,15 @@ export function Header({ title }: HeaderProps) {
 
         <Pressable
           onPress={() => router.push(ROUTES.notifications)}
-          className="relative h-9 w-9 items-center justify-center rounded-md active:bg-slate-100"
+          className="relative h-9 w-9 items-center justify-center rounded-md active:bg-surface-muted"
         >
           <Bell size={20} color={iconColor.subtle} />
           {hasUnread && (
-            <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
+            <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger" />
           )}
         </Pressable>
 
-        <View className="h-6 w-px bg-slate-200" />
+        <View className="h-6 w-px bg-surface-border" />
 
         <Pressable
           onPress={() => router.push(ROUTES.profile)}
@@ -122,13 +120,13 @@ export function Header({ title }: HeaderProps) {
         >
           {isWide && (
             <View className="items-end">
-              <Text className="text-sm font-medium text-brown">
-                Alex Morgan
+              <Text className="text-sm font-medium text-ink">
+                {MOCK_USER.name}
               </Text>
-              <Text className="text-xs text-slate-500">Growth Lead</Text>
+              <Text className="text-xs text-ink-subtle">{MOCK_USER.role}</Text>
             </View>
           )}
-          <Avatar fallback="AM" src={AVATAR_SRC} />
+          <Avatar fallback="AM" src={MOCK_USER.avatar} />
         </Pressable>
       </View>
     </View>

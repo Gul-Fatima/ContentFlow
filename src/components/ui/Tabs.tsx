@@ -19,7 +19,7 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
   return (
     <View
       className={cn(
-        'flex-row items-center rounded-xl bg-slate-100 p-1',
+        'flex-row items-center rounded-card bg-surface-muted p-1',
         className
       )}
     >
@@ -30,14 +30,14 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
             key={tab.id}
             onPress={() => onChange(tab.id)}
             className={cn(
-              'flex-1 flex-row items-center justify-center rounded-lg px-4 py-2',
-              isActive ? 'bg-white shadow-sm' : 'active:bg-slate-200'
+              'flex-1 flex-row items-center justify-center rounded-control px-4 py-2',
+              isActive ? 'bg-white shadow-sm' : 'active:bg-surface-border'
             )}
           >
             <Text
               className={cn(
                 'text-sm font-medium',
-                isActive ? 'text-brand-700' : 'text-slate-600'
+                isActive ? 'text-primary-700' : 'text-ink-muted'
               )}
             >
               {tab.label}
@@ -45,14 +45,14 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
             {tab.count !== undefined && (
               <View
                 className={cn(
-                  'ml-2 min-w-5 items-center justify-center rounded-full px-1 py-0.5',
-                  isActive ? 'bg-brand-100' : 'bg-slate-200'
+                  'ml-2 min-w-5 items-center justify-center rounded-pill px-1 py-0.5',
+                  isActive ? 'bg-primary-100' : 'bg-surface-border'
                 )}
               >
                 <Text
                   className={cn(
-                    'text-[10px] font-medium',
-                    isActive ? 'text-brand-700' : 'text-slate-600'
+                    'text-caption font-medium',
+                    isActive ? 'text-primary-700' : 'text-ink-muted'
                   )}
                 >
                   {tab.count}

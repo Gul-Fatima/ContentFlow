@@ -25,7 +25,7 @@ import { FadeIn } from '../../src/components/ui/FadeIn';
 import { Grid } from '../../src/components/ui/Grid';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
-import { iconColor, palette } from '../../src/lib/theme';
+import { colors, iconColor, palette } from '../../src/lib/theme';
 
 interface PlanFeature {
   text: string;
@@ -55,7 +55,7 @@ const plans: Plan[] = [
     price: 29,
     period: '/month',
     Icon: Zap,
-    iconBg: 'bg-slate-100',
+    iconBg: 'bg-surface-muted',
     iconColor: iconColor.subtle,
     cta: 'Downgrade',
     features: [
@@ -78,7 +78,7 @@ const plans: Plan[] = [
     price: 79,
     period: '/month',
     Icon: Crown,
-    iconBg: 'bg-amber-500',
+    iconBg: 'bg-warning',
     iconColor: palette.white,
     popular: true,
     current: true,
@@ -103,7 +103,7 @@ const plans: Plan[] = [
     price: 199,
     period: '/month',
     Icon: Building2,
-    iconBg: 'bg-brand-600',
+    iconBg: 'bg-primary-600',
     iconColor: palette.white,
     cta: 'Upgrade Now',
     features: [
@@ -144,10 +144,10 @@ export default function PricingScreen() {
             <Text className="text-xs font-semibold text-white">Pricing</Text>
           </View>
         </Badge>
-        <Text className="mb-3 text-center text-2xl font-bold text-brown md:text-3xl">
+        <Text className="mb-3 text-center text-2xl font-bold text-ink md:text-3xl">
           Choose the right plan for your team
         </Text>
-        <Text className="text-center text-lg text-slate-500">
+        <Text className="text-center text-lg text-ink-subtle">
           Scale your social media presence with AI. All plans include a 14-day
           free trial.
         </Text>
@@ -157,14 +157,14 @@ export default function PricingScreen() {
           <Text
             className={cn(
               'text-sm font-medium',
-              !isAnnual ? 'text-brown' : 'text-slate-400'
+              !isAnnual ? 'text-ink' : 'text-ink-faint'
             )}
           >
             Monthly
           </Text>
           <Pressable
             onPress={() => setBillingCycle(isAnnual ? 'monthly' : 'annual')}
-            className="h-7 w-12 justify-center rounded-full bg-brand-600 px-1"
+            className="h-7 w-12 justify-center rounded-full bg-primary-600 px-1"
           >
             <View
               className={cn(
@@ -177,13 +177,13 @@ export default function PricingScreen() {
             <Text
               className={cn(
                 'text-sm font-medium',
-                isAnnual ? 'text-brown' : 'text-slate-400'
+                isAnnual ? 'text-ink' : 'text-ink-faint'
               )}
             >
               Annual
             </Text>
-            <View className="rounded-full bg-emerald-50 px-2 py-0.5">
-              <Text className="text-xs font-semibold text-emerald-600">
+            <View className="rounded-full bg-success-soft px-2 py-0.5">
+              <Text className="text-xs font-semibold text-success">
                 Save 20%
               </Text>
             </View>
@@ -202,13 +202,13 @@ export default function PricingScreen() {
                 className={cn(
                   'relative h-full overflow-hidden',
                   plan.current
-                    ? 'border-brand-300 ring-2 ring-brand-100'
-                    : 'border-slate-200'
+                    ? 'border-primary-300 ring-2 ring-primary-100'
+                    : 'border-surface-border'
                 )}
               >
                 {plan.popular && (
-                  <View className="absolute right-0 top-0 z-10 rounded-bl-lg bg-brand-600 px-3 py-1">
-                    <Text className="text-[10px] font-bold uppercase tracking-wider text-white">
+                  <View className="absolute right-0 top-0 z-10 rounded-bl-lg bg-primary-600 px-3 py-1">
+                    <Text className="text-caption font-bold uppercase tracking-wider text-white">
                       Current Plan
                     </Text>
                   </View>
@@ -235,15 +235,15 @@ export default function PricingScreen() {
                   {/* Price */}
                   <View className="mb-6">
                     <View className="flex-row items-baseline gap-1">
-                      <Text className="text-4xl font-bold text-brown">
+                      <Text className="text-4xl font-bold text-ink">
                         ${price}
                       </Text>
-                      <Text className="text-sm text-slate-500">
+                      <Text className="text-sm text-ink-subtle">
                         {plan.period}
                       </Text>
                     </View>
                     {isAnnual && (
-                      <Text className="mt-1 text-xs text-emerald-600">
+                      <Text className="mt-1 text-xs text-success">
                         ${price * 12}/year — saving $
                         {Math.round(plan.price * 12 * 0.2)}/year
                       </Text>
@@ -257,14 +257,16 @@ export default function PricingScreen() {
                         <View
                           className={cn(
                             'mt-0.5 h-4 w-4 items-center justify-center rounded-full',
-                            feature.included ? 'bg-emerald-100' : 'bg-slate-100'
+                            feature.included ? 'bg-success-soft' : 'bg-surface-muted'
                           )}
                         >
                           <Check
                             size={10}
                             strokeWidth={3}
                             color={
-                              feature.included ? iconColor.success : '#CBD5E1'
+                              feature.included
+                                ? iconColor.success
+                                : colors.ink.faint
                             }
                           />
                         </View>
@@ -272,8 +274,8 @@ export default function PricingScreen() {
                           className={cn(
                             'flex-1 text-sm',
                             feature.included
-                              ? 'text-slate-700'
-                              : 'text-slate-400'
+                              ? 'text-ink-muted'
+                              : 'text-ink-faint'
                           )}
                         >
                           {feature.text}
@@ -318,17 +320,17 @@ export default function PricingScreen() {
             </View>
           </CardHeader>
           <CardContent>
-            <View className="flex-row items-center gap-3 rounded-lg border border-slate-100 bg-cream p-3">
-              <View className="h-10 w-14 items-center justify-center rounded-md bg-brand-800">
-                <Text className="text-[10px] font-bold tracking-wider text-white">
+            <View className="flex-row items-center gap-3 rounded-lg border border-surface-muted bg-surface-page p-3">
+              <View className="h-10 w-14 items-center justify-center rounded-md bg-sidebar-card">
+                <Text className="text-caption font-bold tracking-wider text-white">
                   VISA
                 </Text>
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-medium text-brown">
+                <Text className="text-sm font-medium text-ink">
                   •••• •••• •••• 4242
                 </Text>
-                <Text className="text-xs text-slate-500">
+                <Text className="text-xs text-ink-subtle">
                   Expires 08/2027
                 </Text>
               </View>
@@ -347,21 +349,21 @@ export default function PricingScreen() {
             </View>
           </CardHeader>
           <CardContent>
-            <View className="rounded-lg border border-slate-100 bg-cream p-3">
-              <Text className="text-2xl font-bold text-brown">
+            <View className="rounded-lg border border-surface-muted bg-surface-page p-3">
+              <Text className="text-2xl font-bold text-ink">
                 Feb 27, 2026
               </Text>
-              <Text className="mt-1 text-sm text-slate-500">
+              <Text className="mt-1 text-sm text-ink-subtle">
                 Pro Plan — $79.00
               </Text>
               <View className="mt-3 flex-row items-center gap-2">
-                <View className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                <View className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-border">
                   <View
-                    className="h-full rounded-full bg-brand-500"
+                    className="h-full rounded-full bg-primary-500"
                     style={{ width: '60%' }}
                   />
                 </View>
-                <Text className="text-xs text-slate-400">18 days left</Text>
+                <Text className="text-xs text-ink-faint">18 days left</Text>
               </View>
             </View>
           </CardContent>
@@ -376,24 +378,24 @@ export default function PricingScreen() {
           </CardHeader>
           <CardContent className="gap-3">
             <View className="flex-row items-center justify-between">
-              <Text className="text-sm text-slate-600">Posts Generated</Text>
-              <Text className="text-sm font-bold text-brown">142 / 200</Text>
+              <Text className="text-sm text-ink-muted">Posts Generated</Text>
+              <Text className="text-sm font-bold text-ink">142 / 200</Text>
             </View>
-            <View className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <View className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
               <View
-                className="h-full rounded-full bg-brand-500"
+                className="h-full rounded-full bg-primary-500"
                 style={{ width: '71%' }}
               />
             </View>
             <View className="flex-row items-center justify-between pt-1">
-              <Text className="text-sm text-slate-600">AI Credits</Text>
-              <Text className="text-sm font-bold text-brown">
+              <Text className="text-sm text-ink-muted">AI Credits</Text>
+              <Text className="text-sm font-bold text-ink">
                 8,420 / 10,000
               </Text>
             </View>
-            <View className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <View className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
               <View
-                className="h-full rounded-full bg-emerald-500"
+                className="h-full rounded-full bg-success"
                 style={{ width: '84%' }}
               />
             </View>
@@ -425,26 +427,26 @@ export default function PricingScreen() {
                 className={cn(
                   'flex-row items-center justify-between px-6 py-4',
                   i !== billingHistory.length - 1 &&
-                    'border-b border-slate-100'
+                    'border-b border-surface-muted'
                 )}
               >
                 <View className="flex-1 flex-row items-center gap-4">
-                  <View className="h-9 w-9 items-center justify-center rounded-lg bg-slate-100">
+                  <View className="h-9 w-9 items-center justify-center rounded-lg bg-surface-muted">
                     <Receipt size={16} color={iconColor.muted} />
                   </View>
                   <View>
-                    <Text className="text-sm font-medium text-brown">
+                    <Text className="text-sm font-medium text-ink">
                       {item.invoice}
                     </Text>
-                    <Text className="text-xs text-slate-500">{item.date}</Text>
+                    <Text className="text-xs text-ink-subtle">{item.date}</Text>
                   </View>
                 </View>
                 <View className="flex-row items-center gap-4">
                   <Badge variant="success">{item.status}</Badge>
-                  <Text className="text-sm font-semibold text-brown">
+                  <Text className="text-sm font-semibold text-ink">
                     {item.amount}
                   </Text>
-                  <ChevronRight size={16} color="#CBD5E1" />
+                  <ChevronRight size={16} color={colors.ink.faint} />
                 </View>
               </View>
             </FadeIn>

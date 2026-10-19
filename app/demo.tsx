@@ -15,14 +15,14 @@ import { Badge } from '../src/components/ui/Badge';
 import { Button } from '../src/components/ui/Button';
 import { FadeIn } from '../src/components/ui/FadeIn';
 import { Grid } from '../src/components/ui/Grid';
-import { iconColor, palette } from '../src/lib/theme';
+import { colors, iconColor, palette, PLATFORM_COLORS } from '../src/lib/theme';
 import { ROUTES } from '../src/constants/routes';
 
 const CHAPTERS = [
   {
     Icon: BrainCircuit,
     color: iconColor.primary,
-    bg: 'bg-brand-100',
+    bg: 'bg-primary-100',
     title: '0:45 — Brand Memory',
     description:
       'Watch how to configure the AI to match your specific tone of voice. Upload your brand guidelines and see the AI adapt instantly.',
@@ -30,8 +30,8 @@ const CHAPTERS = [
   },
   {
     Icon: CalendarClock,
-    color: '#DB2777',
-    bg: 'bg-pink-100',
+    color: PLATFORM_COLORS.instagram,
+    bg: 'bg-accent-instagram-soft',
     title: '1:30 — Auto-Scheduling',
     description:
       'See the "Smart Schedule" feature in action. The agent analyzes your audience activity and fills your calendar automatically.',
@@ -40,7 +40,7 @@ const CHAPTERS = [
   {
     Icon: BarChart3,
     color: iconColor.success,
-    bg: 'bg-emerald-100',
+    bg: 'bg-success-soft',
     title: '2:15 — ROI Analytics',
     description:
       "Don't just track likes. Track revenue. We'll show you how to connect your conversion events to social performance.",
@@ -58,19 +58,19 @@ export default function WatchDemoScreen() {
     router.canGoBack() ? router.back() : router.replace(ROUTES.home);
 
   return (
-    <View className="flex-1 bg-cream" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-surface-page" style={{ paddingTop: insets.top }}>
       <ScrollView contentContainerClassName="pb-8">
         {/* Navigation */}
-        <View className="border-b border-slate-100 bg-white px-6 py-3">
+        <View className="border-b border-surface-muted bg-white px-6 py-3">
           <View className="flex-row items-center justify-between">
             <Pressable
               onPress={goBack}
               className="flex-row items-center gap-2 active:opacity-70"
             >
-              <View className="h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
+              <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
                 <Bot size={20} color={palette.white} />
               </View>
-              <Text className="text-xl font-bold tracking-tight text-brown">
+              <Text className="text-xl font-bold tracking-tight text-ink">
                 Agent.ai
               </Text>
             </Pressable>
@@ -84,13 +84,13 @@ export default function WatchDemoScreen() {
         </View>
 
         {/* Hero + player */}
-        <View className="bg-brand-900 px-6 pb-20 pt-16">
+        <View className="bg-sidebar px-6 pb-20 pt-16">
           <View className="mx-auto mb-12 w-full max-w-4xl items-center">
             <FadeIn className="mb-6">
-              <Badge className="border-brand-500 bg-brand-800 px-4 py-1.5">
+              <Badge className="border-primary-500 bg-sidebar-card px-4 py-1.5">
                 <View className="flex-row items-center gap-2">
-                  <Play size={12} color={palette.brand[200]} />
-                  <Text className="text-sm font-semibold text-brand-200">
+                  <Play size={12} color={colors.primary[300]} />
+                  <Text className="text-sm font-semibold text-primary-100">
                     3-Minute Walkthrough
                   </Text>
                 </View>
@@ -100,14 +100,14 @@ export default function WatchDemoScreen() {
             <FadeIn delay={100}>
               <Text className="mb-6 text-center text-3xl font-bold tracking-tight text-white md:text-5xl">
                 See how Agent.ai automates{'\n'}
-                <Text className="text-brand-400">
+                <Text className="text-primary-400">
                   your entire workflow
                 </Text>
               </Text>
             </FadeIn>
 
             <FadeIn delay={200}>
-              <Text className="text-center text-lg text-slate-400 md:text-xl">
+              <Text className="text-center text-lg text-ink-faint md:text-xl">
                 From brand voice calibration to multi-channel scheduling, watch
                 how our AI agent handles the heavy lifting.
               </Text>
@@ -116,7 +116,7 @@ export default function WatchDemoScreen() {
 
           {/* Player */}
           <FadeIn delay={400}>
-            <View className="mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-brand-700 bg-brand-800">
+            <View className="mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-sidebar-track bg-sidebar-card">
               <View style={{ aspectRatio: 16 / 9 }}>
                 {!isPlaying ? (
                   <>
@@ -152,7 +152,7 @@ export default function WatchDemoScreen() {
                         <Text className="text-lg font-semibold text-white">
                           Agent.ai Product Tour
                         </Text>
-                        <Text className="text-sm text-slate-300">
+                        <Text className="text-sm text-ink-faint">
                           3:24 • 4K Quality
                         </Text>
                       </View>
@@ -168,8 +168,8 @@ export default function WatchDemoScreen() {
                   </>
                 ) : (
                   <View className="absolute inset-0 items-center justify-center bg-black">
-                    <View className="h-16 w-16 rounded-full border-4 border-brand-500 border-t-transparent" />
-                    <Text className="mt-4 text-slate-400">
+                    <View className="h-16 w-16 rounded-full border-4 border-primary-500 border-t-transparent" />
+                    <Text className="mt-4 text-ink-faint">
                       Loading demo stream...
                     </Text>
                     <Button
@@ -197,15 +197,15 @@ export default function WatchDemoScreen() {
                 >
                   <Icon size={24} color={color} />
                 </View>
-                <Text className="text-xl font-bold text-brown">{title}</Text>
-                <Text className="leading-relaxed text-slate-600">
+                <Text className="text-xl font-bold text-ink">{title}</Text>
+                <Text className="leading-relaxed text-ink-muted">
                   {description}
                 </Text>
                 <View className="gap-3">
                   {bullets.map((bullet) => (
                     <View key={bullet} className="flex-row items-center gap-2">
                       <CheckCircle2 size={16} color={iconColor.success} />
-                      <Text className="text-sm text-slate-600">{bullet}</Text>
+                      <Text className="text-sm text-ink-muted">{bullet}</Text>
                     </View>
                   ))}
                 </View>
@@ -215,12 +215,12 @@ export default function WatchDemoScreen() {
         </View>
 
         {/* CTA */}
-        <View className="border-t border-slate-200 bg-cream px-6 py-20">
+        <View className="border-t border-surface-border bg-surface-page px-6 py-20">
           <View className="mx-auto w-full max-w-4xl items-center">
-            <Text className="mb-6 text-center text-3xl font-bold text-brown md:text-4xl">
+            <Text className="mb-6 text-center text-3xl font-bold text-ink md:text-4xl">
               Ready to try it yourself?
             </Text>
-            <Text className="mb-10 text-center text-lg text-slate-600">
+            <Text className="mb-10 text-center text-lg text-ink-muted">
               Get full access to all features shown in the demo. No credit card
               required for the 14-day trial.
             </Text>
@@ -246,7 +246,7 @@ export default function WatchDemoScreen() {
               {['Setup in 2 minutes', 'Cancel anytime'].map((label) => (
                 <View key={label} className="flex-row items-center gap-2">
                   <CheckCircle2 size={16} color={iconColor.success} />
-                  <Text className="text-sm text-slate-500">{label}</Text>
+                  <Text className="text-sm text-ink-subtle">{label}</Text>
                 </View>
               ))}
             </View>
@@ -254,22 +254,22 @@ export default function WatchDemoScreen() {
         </View>
 
         {/* Footer */}
-        <View className="border-t border-slate-100 bg-white px-6 py-12">
+        <View className="border-t border-surface-muted bg-white px-6 py-12">
           <View className="flex-col items-center justify-between gap-6 md:flex-row">
             <View className="flex-row items-center gap-2">
-              <View className="h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
+              <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
                 <Bot size={20} color={palette.white} />
               </View>
-              <Text className="text-xl font-bold tracking-tight text-brown">
+              <Text className="text-xl font-bold tracking-tight text-ink">
                 Agent.ai
               </Text>
             </View>
-            <Text className="text-sm text-slate-500">
+            <Text className="text-sm text-ink-subtle">
               © 2026 Agent.ai Inc. All rights reserved.
             </Text>
             <View className="flex-row gap-6">
               {['Privacy', 'Terms', 'Contact'].map((link) => (
-                <Text key={link} className="text-sm text-slate-500">
+                <Text key={link} className="text-sm text-ink-subtle">
                   {link}
                 </Text>
               ))}

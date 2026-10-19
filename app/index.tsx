@@ -28,7 +28,7 @@ import { Button } from '../src/components/ui/Button';
 import { Card, CardContent } from '../src/components/ui/Card';
 import { FadeIn } from '../src/components/ui/FadeIn';
 import { Grid } from '../src/components/ui/Grid';
-import { iconColor, palette } from '../src/lib/theme';
+import { colors, iconColor, palette, PLATFORM_COLORS } from '../src/lib/theme';
 import { ROUTES } from '../src/constants/routes';
 
 const FEATURES = [
@@ -41,7 +41,7 @@ const FEATURES = [
   },
   {
     Icon: CalendarClock,
-    color: '#DB2777',
+    color: PLATFORM_COLORS.instagram,
     title: 'Smart Scheduling',
     description:
       'Automatically identifies the best times to post for your specific audience to maximize engagement.',
@@ -62,7 +62,7 @@ const FEATURES = [
   },
   {
     Icon: Users,
-    color: '#0284C7',
+    color: colors.accent.link,
     title: 'Collaborative Workflow',
     description:
       'Seamless approval flows for teams. Comment, edit, and approve content in one unified inbox.',
@@ -87,21 +87,21 @@ const LOGOS = [
 const COMMAND_CENTER = [
   {
     Icon: CheckCircle2,
-    color: palette.peach,
+    color: colors.chart.c3,
     title: 'Goal-Oriented Planning',
     description:
       'Set high-level goals like "Increase Brand Awareness" and let the AI break it down.',
   },
   {
     Icon: CheckCircle2,
-    color: '#F472B6',
+    color: colors.chart.c4,
     title: 'Cross-Platform Sync',
     description:
       'Coordinate campaigns across Twitter, LinkedIn, and Instagram seamlessly.',
   },
   {
     Icon: CheckCircle2,
-    color: '#34D399',
+    color: colors.chart.c2,
     title: 'Real-time ROI Tracking',
     description:
       'Measure the actual business impact of your social media efforts.',
@@ -148,16 +148,16 @@ export default function LandingScreen() {
   const watchDemo = () => router.push(ROUTES.demo);
 
   return (
-    <View className="flex-1 bg-cream" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-surface-page" style={{ paddingTop: insets.top }}>
       <ScrollView contentContainerClassName="pb-8">
         {/* Navigation */}
-        <View className="border-b border-slate-100 bg-white px-6 py-3">
+        <View className="border-b border-surface-muted bg-white px-6 py-3">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <View className="h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
+              <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
                 <Bot size={20} color={palette.white} />
               </View>
-              <Text className="text-xl font-bold tracking-tight text-brown">
+              <Text className="text-xl font-bold tracking-tight text-ink">
                 Agent.ai
               </Text>
             </View>
@@ -176,11 +176,11 @@ export default function LandingScreen() {
             <FadeIn className="mb-6">
               <Badge
                 variant="secondary"
-                className="border-peach/60 bg-peach px-4 py-1.5"
+                className="border-primary-100/60 bg-primary-50 px-4 py-1.5"
               >
                 <View className="flex-row items-center gap-2">
-                  <Sparkles size={14} color={palette.brand[900]} />
-                  <Text className="text-sm font-semibold text-brand-900">
+                  <Sparkles size={14} color={colors.ink.DEFAULT} />
+                  <Text className="text-sm font-semibold text-ink">
                     Now with GPT-4o Integration
                   </Text>
                 </View>
@@ -188,14 +188,14 @@ export default function LandingScreen() {
             </FadeIn>
 
             <FadeIn delay={100}>
-              <Text className="mb-8 text-center text-4xl font-bold leading-tight tracking-tight text-brown md:text-6xl">
+              <Text className="mb-8 text-center text-4xl font-bold leading-tight tracking-tight text-ink md:text-6xl">
                 Your AI Social Media{'\n'}
-                <Text className="text-brand-600">Marketing Team</Text>
+                <Text className="text-primary-600">Marketing Team</Text>
               </Text>
             </FadeIn>
 
             <FadeIn delay={200}>
-              <Text className="mb-10 text-center text-lg leading-relaxed text-slate-600 md:text-xl">
+              <Text className="mb-10 text-center text-lg leading-relaxed text-ink-muted md:text-xl">
                 Stop spending hours on content. Agent.ai learns your brand
                 voice, drafts posts, schedules content, and analyzes performance
                 — automatically.
@@ -217,7 +217,7 @@ export default function LandingScreen() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full rounded-full border-slate-300 sm:w-auto"
+                  className="w-full rounded-full border-surface-border sm:w-auto"
                   leftIcon={<Play size={20} color={iconColor.primary} />}
                   onPress={watchDemo}
                 >
@@ -235,7 +235,7 @@ export default function LandingScreen() {
                 ].map((label) => (
                   <View key={label} className="flex-row items-center gap-2">
                     <CheckCircle2 size={16} color={iconColor.success} />
-                    <Text className="text-sm text-slate-500">{label}</Text>
+                    <Text className="text-sm text-ink-subtle">{label}</Text>
                   </View>
                 ))}
               </View>
@@ -244,15 +244,15 @@ export default function LandingScreen() {
         </View>
 
         {/* Social proof */}
-        <View className="border-y border-slate-100 bg-cream px-6 py-12">
-          <Text className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <View className="border-y border-surface-muted bg-surface-page px-6 py-12">
+          <Text className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-ink-subtle">
             Trusted by modern marketing teams
           </Text>
           <View className="flex-row flex-wrap items-center justify-center gap-8 opacity-70">
             {LOGOS.map(({ label, Icon }) => (
               <View key={label} className="flex-row items-center gap-2">
                 <Icon size={24} color={iconColor.subtle} />
-                <Text className="text-xl font-bold text-slate-500">
+                <Text className="text-xl font-bold text-ink-subtle">
                   {label}
                 </Text>
               </View>
@@ -263,10 +263,10 @@ export default function LandingScreen() {
         {/* Features */}
         <View className="bg-white px-6 py-20">
           <View className="mx-auto mb-16 w-full max-w-3xl">
-            <Text className="mb-6 text-center text-3xl font-bold text-brown md:text-4xl">
+            <Text className="mb-6 text-center text-3xl font-bold text-ink md:text-4xl">
               Superpowers for your social strategy
             </Text>
-            <Text className="text-center text-lg text-slate-600">
+            <Text className="text-center text-lg text-ink-muted">
               Agent.ai isn&apos;t just a scheduling tool. It&apos;s an
               intelligent partner that understands your goals and executes them
               with precision.
@@ -275,15 +275,15 @@ export default function LandingScreen() {
 
           <Grid columns={3} gutter={32}>
             {FEATURES.map(({ Icon, color, title, description }) => (
-              <Card key={title} className="border-none bg-cream shadow-none">
+              <Card key={title} className="border-none bg-surface-page shadow-none">
                 <CardContent className="p-8">
                   <View className="mb-6 h-14 w-14 items-center justify-center rounded-xl bg-white shadow-sm">
                     <Icon size={28} color={color} />
                   </View>
-                  <Text className="mb-3 text-xl font-bold text-brown">
+                  <Text className="mb-3 text-xl font-bold text-ink">
                     {title}
                   </Text>
-                  <Text className="leading-relaxed text-slate-600">
+                  <Text className="leading-relaxed text-ink-muted">
                     {description}
                   </Text>
                 </CardContent>
@@ -293,16 +293,16 @@ export default function LandingScreen() {
         </View>
 
         {/* Command center */}
-        <View className="bg-brand-900 px-6 py-20">
+        <View className="bg-sidebar px-6 py-20">
           <View className="flex-col gap-12 lg:flex-row lg:items-center">
             <View className="flex-1">
               <Text className="mb-6 text-3xl font-bold text-white md:text-4xl">
                 Manage everything from one{'\n'}
-                <Text className="text-peach">
+                <Text className="text-primary-300">
                   intelligent command center
                 </Text>
               </Text>
-              <Text className="mb-8 text-lg leading-relaxed text-slate-400">
+              <Text className="mb-8 text-lg leading-relaxed text-ink-faint">
                 Experience the power of a unified dashboard where goals turn
                 into tasks, and tasks turn into results.
               </Text>
@@ -310,14 +310,14 @@ export default function LandingScreen() {
               <View className="gap-6">
                 {COMMAND_CENTER.map(({ Icon, color, title, description }) => (
                   <View key={title} className="flex-row items-start gap-4">
-                    <View className="h-10 w-10 items-center justify-center rounded-lg bg-brand-800">
+                    <View className="h-10 w-10 items-center justify-center rounded-lg bg-sidebar-card">
                       <Icon size={24} color={color} />
                     </View>
                     <View className="flex-1">
                       <Text className="mb-1 text-lg font-semibold text-white">
                         {title}
                       </Text>
-                      <Text className="text-slate-400">{description}</Text>
+                      <Text className="text-ink-faint">{description}</Text>
                     </View>
                   </View>
                 ))}
@@ -331,7 +331,7 @@ export default function LandingScreen() {
             </View>
 
             <View className="flex-1">
-              <View className="overflow-hidden rounded-xl border border-brand-700 bg-brand-800">
+              <View className="overflow-hidden rounded-xl border border-sidebar-track bg-sidebar-card">
                 <Image
                   source={{
                     uri: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80',
@@ -342,13 +342,13 @@ export default function LandingScreen() {
                 <View className="px-6 py-4">
                   <View className="flex-row items-center gap-3">
                     <View className="flex-row">
-                      <View className="h-8 w-8 items-center justify-center rounded-full border-2 border-brand-800 bg-brand-500">
+                      <View className="h-8 w-8 items-center justify-center rounded-full border-2 border-ink bg-primary-500">
                         <Text className="text-xs font-bold text-white">AI</Text>
                       </View>
-                      <View className="-ml-2 h-8 w-8 rounded-full border-2 border-brand-800 bg-brand-700" />
-                      <View className="-ml-2 h-8 w-8 rounded-full border-2 border-brand-800 bg-brand-700" />
+                      <View className="-ml-2 h-8 w-8 rounded-full border-2 border-ink bg-sidebar-track" />
+                      <View className="-ml-2 h-8 w-8 rounded-full border-2 border-ink bg-sidebar-track" />
                     </View>
-                    <Text className="text-sm font-medium text-slate-300">
+                    <Text className="text-sm font-medium text-ink-faint">
                       Agent + 2 team members active
                     </Text>
                   </View>
@@ -359,31 +359,31 @@ export default function LandingScreen() {
         </View>
 
         {/* Testimonials */}
-        <View className="bg-cream px-6 py-20">
+        <View className="bg-surface-page px-6 py-20">
           <View className="mb-16">
-            <Text className="mb-4 text-center text-3xl font-bold text-brown">
+            <Text className="mb-4 text-center text-3xl font-bold text-ink">
               Loved by marketing teams
             </Text>
-            <Text className="text-center text-slate-600">
+            <Text className="text-center text-ink-muted">
               Join 10,000+ marketers who trust Agent.ai
             </Text>
           </View>
 
           <Grid columns={3} gutter={32}>
             {TESTIMONIALS.map((testimonial) => (
-              <Card key={testimonial.author} className="border border-slate-100">
+              <Card key={testimonial.author} className="border border-surface-muted">
                 <CardContent className="p-8">
                   <View className="mb-4 flex-row gap-1">
                     {[0, 1, 2, 3, 4].map((i) => (
                       <Star
                         key={i}
                         size={16}
-                        color="#FBBF24"
-                        fill="#FBBF24"
+                        color={colors.chart.c3}
+                        fill={colors.chart.c3}
                       />
                     ))}
                   </View>
-                  <Text className="mb-6 text-lg italic text-slate-700">
+                  <Text className="mb-6 text-lg italic text-ink-muted">
                     &quot;{testimonial.quote}&quot;
                   </Text>
                   <View className="flex-row items-center gap-3">
@@ -393,10 +393,10 @@ export default function LandingScreen() {
                       resizeMode="cover"
                     />
                     <View>
-                      <Text className="text-sm font-semibold text-brown">
+                      <Text className="text-sm font-semibold text-ink">
                         {testimonial.author}
                       </Text>
-                      <Text className="text-xs text-slate-500">
+                      <Text className="text-xs text-ink-subtle">
                         {testimonial.role}
                       </Text>
                     </View>
@@ -409,11 +409,11 @@ export default function LandingScreen() {
 
         {/* CTA */}
         <View className="bg-white px-6 py-20">
-          <View className="rounded-3xl bg-brand-600 p-8 md:p-16">
+          <View className="rounded-3xl bg-primary-600 p-8 md:p-16">
             <Text className="mb-6 text-center text-3xl font-bold tracking-tight text-white md:text-4xl">
               Ready to automate your growth?
             </Text>
-            <Text className="mb-10 text-center text-lg text-brand-100">
+            <Text className="mb-10 text-center text-lg text-primary-100">
               Join thousands of brands using Agent.ai to scale their social
               presence without scaling their headcount.
             </Text>
@@ -421,7 +421,7 @@ export default function LandingScreen() {
               <Button
                 size="lg"
                 className="w-full bg-white sm:w-auto"
-                textClassName="text-brand-600"
+                textClassName="text-primary-600"
                 onPress={enterApp}
               >
                 Get Started for Free
@@ -429,31 +429,31 @@ export default function LandingScreen() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full border-brand-400 sm:w-auto"
+                className="w-full border-primary-400 sm:w-auto"
                 textClassName="text-white"
               >
                 Contact Sales
               </Button>
             </View>
-            <Text className="mt-6 text-center text-sm text-brand-200">
+            <Text className="mt-6 text-center text-sm text-primary-100">
               No credit card required · 14-day free trial · Cancel anytime
             </Text>
           </View>
         </View>
 
         {/* Footer */}
-        <View className="border-t border-slate-100 bg-white px-6 pb-8 pt-16">
+        <View className="border-t border-surface-muted bg-white px-6 pb-8 pt-16">
           <Grid columns={2} mobileColumns={2} gutter={32}>
             <View className="mb-8">
               <View className="mb-4 flex-row items-center gap-2">
-                <View className="h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
+                <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
                   <Bot size={20} color={palette.white} />
                 </View>
-                <Text className="text-xl font-bold tracking-tight text-brown">
+                <Text className="text-xl font-bold tracking-tight text-ink">
                   Agent.ai
                 </Text>
               </View>
-              <Text className="mb-6 max-w-xs text-sm text-slate-500">
+              <Text className="mb-6 max-w-xs text-sm text-ink-subtle">
                 The AI-powered social media management platform for modern
                 marketing teams.
               </Text>
@@ -466,7 +466,7 @@ export default function LandingScreen() {
                 ].map(({ Icon, label }) => (
                   <View
                     key={label}
-                    className="h-10 w-10 items-center justify-center rounded-full bg-slate-100"
+                    className="h-10 w-10 items-center justify-center rounded-full bg-surface-muted"
                     accessibilityLabel={label}
                   >
                     <Icon size={20} color={iconColor.subtle} />
@@ -477,12 +477,12 @@ export default function LandingScreen() {
 
             {FOOTER_COLUMNS.map((column) => (
               <View key={column.title} className="mb-8">
-                <Text className="mb-4 font-semibold text-brown">
+                <Text className="mb-4 font-semibold text-ink">
                   {column.title}
                 </Text>
                 <View className="gap-2">
                   {column.links.map((link) => (
-                    <Text key={link} className="text-sm text-slate-600">
+                    <Text key={link} className="text-sm text-ink-muted">
                       {link}
                     </Text>
                   ))}
@@ -491,13 +491,13 @@ export default function LandingScreen() {
             ))}
           </Grid>
 
-          <View className="flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 md:flex-row">
-            <Text className="text-sm text-slate-500">
+          <View className="flex-col items-center justify-between gap-4 border-t border-surface-muted pt-8 md:flex-row">
+            <Text className="text-sm text-ink-subtle">
               © 2026 Agent.ai Inc. All rights reserved.
             </Text>
             <View className="flex-row items-center gap-2">
-              <View className="h-2 w-2 rounded-full bg-emerald-500" />
-              <Text className="text-sm text-slate-500">
+              <View className="h-2 w-2 rounded-full bg-success" />
+              <Text className="text-sm text-ink-subtle">
                 All systems operational
               </Text>
             </View>

@@ -22,7 +22,7 @@ import {
 import { FadeIn } from '../../src/components/ui/FadeIn';
 import { Gradient } from '../../src/components/ui/Gradient';
 import { Screen } from '../../src/components/layout/Screen';
-import { iconColor, palette } from '../../src/lib/theme';
+import { colors, iconColor } from '../../src/lib/theme';
 
 const RANGES = ['Last 7 Days', 'Last 30 Days', 'Last Quarter', 'Year to Date'];
 
@@ -81,10 +81,10 @@ export default function AnalyticsScreen() {
     >
       <View className="flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <View>
-          <Text className="text-2xl font-bold text-brown md:text-3xl">
+          <Text className="text-2xl font-bold text-ink md:text-3xl">
             Performance Analytics
           </Text>
-          <Text className="text-slate-500">
+          <Text className="text-ink-subtle">
             Track your growth and AI optimization impact.
           </Text>
         </View>
@@ -108,15 +108,15 @@ export default function AnalyticsScreen() {
               onPress={() => setRange(option)}
               className={
                 isActive
-                  ? 'rounded-full bg-brand-600 px-3 py-1.5'
-                  : 'rounded-full border border-slate-200 bg-white px-3 py-1.5 active:bg-cream'
+                  ? 'rounded-full bg-primary-600 px-3 py-1.5'
+                  : 'rounded-full border border-surface-border bg-white px-3 py-1.5 active:bg-surface-muted'
               }
             >
               <Text
                 className={
                   isActive
                     ? 'text-xs font-medium text-white'
-                    : 'text-xs font-medium text-slate-600'
+                    : 'text-xs font-medium text-ink-muted'
                 }
               >
                 {option}
@@ -133,7 +133,7 @@ export default function AnalyticsScreen() {
             <Card>
               <CardContent className="p-6">
                 <View className="mb-4 flex-row items-center justify-between">
-                  <View className="rounded-lg bg-slate-100 p-2">
+                  <View className="rounded-lg bg-surface-muted p-2">
                     <stat.Icon size={20} color={iconColor.subtle} />
                   </View>
                   <Badge variant={stat.trend === 'up' ? 'success' : 'error'}>
@@ -146,8 +146,8 @@ export default function AnalyticsScreen() {
                       <Text
                         className={
                           stat.trend === 'up'
-                            ? 'text-xs font-semibold text-emerald-700'
-                            : 'text-xs font-semibold text-rose-700'
+                            ? 'text-xs font-semibold text-success-text'
+                            : 'text-xs font-semibold text-danger-text'
                         }
                       >
                         {stat.change}
@@ -156,10 +156,10 @@ export default function AnalyticsScreen() {
                   </Badge>
                 </View>
                 <View>
-                  <Text className="text-sm font-medium text-slate-500">
+                  <Text className="text-sm font-medium text-ink-subtle">
                     {stat.label}
                   </Text>
-                  <Text className="text-2xl font-bold text-brown">
+                  <Text className="text-2xl font-bold text-ink">
                     {stat.value}
                   </Text>
                 </View>
@@ -183,10 +183,10 @@ export default function AnalyticsScreen() {
               {BARS.map((h, i) => (
                 <View
                   key={i}
-                  className="relative flex-1 overflow-hidden rounded-t-sm bg-brand-50"
+                  className="relative flex-1 overflow-hidden rounded-t-sm bg-primary-50"
                 >
                   <View
-                    className="absolute bottom-0 left-0 right-0 rounded-t-sm bg-brand-600"
+                    className="absolute bottom-0 left-0 right-0 rounded-t-sm bg-primary-600"
                     style={{ height: `${h}%` }}
                   />
                 </View>
@@ -194,7 +194,7 @@ export default function AnalyticsScreen() {
             </View>
             <View className="mt-4 flex-row justify-between">
               {MONTHS.map((month, i) => (
-                <Text key={i} className="text-[10px] text-slate-400">
+                <Text key={i} className="text-caption text-ink-faint">
                   {month.slice(0, 1)}
                 </Text>
               ))}
@@ -205,21 +205,21 @@ export default function AnalyticsScreen() {
         {/* AI insights + top content */}
         <View className="gap-6" style={{ flex: 1 }}>
           <Gradient
-            colors={[palette.brand[600], palette.brand[700]]}
+            colors={[colors.primary[600], colors.primary[700]]}
             className="rounded-lg border-none shadow-sm"
           >
             <CardContent className="p-6">
               <View className="mb-4 flex-row items-center gap-2">
-                <Lightbulb size={20} color="#FDE047" />
+                <Lightbulb size={20} color={colors.chart.c1} />
                 <Text className="text-lg font-bold text-white">
                   AI Optimization
                 </Text>
               </View>
-              <Text className="mb-6 leading-relaxed text-brand-100">
+              <Text className="mb-6 leading-relaxed text-primary-100">
                 Based on recent performance, posting educational carousels on
                 LinkedIn between 8-10 AM EST is driving 40% higher engagement.
               </Text>
-              <Button className="w-full bg-white" textClassName="text-brand-600">
+              <Button className="w-full bg-white" textClassName="text-primary-600">
                 Adjust Schedule
               </Button>
             </CardContent>
@@ -236,25 +236,25 @@ export default function AnalyticsScreen() {
                   className={
                     i === topContent.length - 1
                       ? 'flex-row items-center justify-between p-4'
-                      : 'flex-row items-center justify-between border-b border-slate-100 p-4'
+                      : 'flex-row items-center justify-between border-b border-surface-muted p-4'
                   }
                 >
                   <View className="flex-1 pr-3">
                     <Text
-                      className="text-sm font-medium text-brown"
+                      className="text-sm font-medium text-ink"
                       numberOfLines={1}
                     >
                       {post.title}
                     </Text>
-                    <Text className="text-xs text-slate-500">
+                    <Text className="text-xs text-ink-subtle">
                       {post.platform}
                     </Text>
                   </View>
                   <View className="items-end">
-                    <Text className="text-sm font-bold text-brown">
+                    <Text className="text-sm font-bold text-ink">
                       {post.views}
                     </Text>
-                    <Text className="text-xs text-slate-500">views</Text>
+                    <Text className="text-xs text-ink-subtle">views</Text>
                   </View>
                 </View>
               ))}

@@ -21,19 +21,19 @@ export interface ButtonProps extends Omit<PressableProps, 'children'> {
 }
 
 const containerVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-brand-600 active:bg-brand-700 shadow-sm',
-  secondary: 'bg-white border border-slate-200 active:bg-cream shadow-sm',
-  ghost: 'bg-transparent active:bg-slate-100',
-  danger: 'bg-rose-600 active:bg-rose-700 shadow-sm',
-  outline: 'bg-transparent border border-slate-200 active:bg-cream',
+  primary: 'bg-primary-600 active:bg-primary-700 shadow-sm',
+  secondary: 'bg-white border border-surface-border active:bg-surface-muted shadow-sm',
+  ghost: 'bg-transparent active:bg-surface-muted',
+  danger: 'bg-danger active:bg-danger-text shadow-sm',
+  outline: 'bg-transparent border border-surface-border active:bg-surface-muted',
 };
 
 const textVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary: 'text-white',
-  secondary: 'text-brown',
-  ghost: 'text-slate-600 active:text-brown',
+  secondary: 'text-ink',
+  ghost: 'text-ink-muted active:text-ink',
   danger: 'text-white',
-  outline: 'text-slate-700',
+  outline: 'text-ink-muted',
 };
 
 const sizeContainer: Record<NonNullable<ButtonProps['size']>, string> = {
@@ -72,7 +72,7 @@ export function Button({
       // gates the handler — the opacity classes below render the state.
       disabled={isDisabled}
       className={cn(
-        'flex-row items-center justify-center rounded-md',
+        'flex-row items-center justify-center rounded-control',
         containerVariants[variant],
         sizeContainer[size],
         isDisabled && 'opacity-50',

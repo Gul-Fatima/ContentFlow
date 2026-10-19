@@ -34,10 +34,8 @@ import { Input } from '../../src/components/ui/Input';
 import { Textarea } from '../../src/components/ui/Textarea';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
-import { iconColor, palette } from '../../src/lib/theme';
-
-const AVATAR_SRC =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
+import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
+import { MOCK_USER } from '../../src/constants/user';
 
 type ProfileTab = 'general' | 'platforms' | 'notifications' | 'security';
 
@@ -55,24 +53,24 @@ const connectedPlatforms = [
     Icon: AtSign,
     handle: '@alexmorgan_ai',
     followers: '4,280',
-    color: '#0EA5E9',
-    bg: 'bg-sky-50',
+    color: PLATFORM_COLORS.twitter,
+    bg: 'bg-accent-twitter-soft',
   },
   {
     name: 'Instagram',
     Icon: Camera,
     handle: '@agentai.official',
     followers: '12.1k',
-    color: '#DB2777',
-    bg: 'bg-pink-50',
+    color: PLATFORM_COLORS.instagram,
+    bg: 'bg-accent-instagram-soft',
   },
   {
     name: 'LinkedIn',
     Icon: Briefcase,
     handle: 'Alex Morgan',
     followers: '8,940',
-    color: '#1D4ED8',
-    bg: 'bg-blue-50',
+    color: PLATFORM_COLORS.linkedin,
+    bg: 'bg-accent-linkedin-soft',
   },
 ];
 
@@ -167,9 +165,9 @@ export default function UserProfileScreen() {
         <Card className="overflow-hidden">
           <Gradient
             colors={[
-              palette.brand[500],
-              palette.brand[700],
-              palette.brand[900],
+              colors.primary[400],
+              colors.primary[600],
+              colors.primary[700],
             ]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -180,36 +178,36 @@ export default function UserProfileScreen() {
               <View className="relative">
                 <View className="h-24 w-24 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-lg">
                   <Image
-                    source={{ uri: AVATAR_SRC }}
+                    source={{ uri: MOCK_USER.avatar }}
                     style={{ width: '100%', height: '100%' }}
                     resizeMode="cover"
-                    accessibilityLabel="Alex Morgan"
+                    accessibilityLabel={MOCK_USER.name}
                   />
                 </View>
-                <Pressable className="absolute -bottom-1 -right-1 h-8 w-8 items-center justify-center rounded-full bg-brand-600 active:bg-brand-700">
+                <Pressable className="absolute -bottom-1 -right-1 h-8 w-8 items-center justify-center rounded-full bg-primary-600 active:bg-primary-700">
                   <Camera size={14} color={palette.white} />
                 </Pressable>
               </View>
 
               <View className="flex-1 gap-1">
                 <View className="flex-row items-center gap-3">
-                  <Text className="text-2xl font-bold text-brown">
-                    Alex Morgan
+                  <Text className="text-2xl font-bold text-ink">
+                    {MOCK_USER.name}
                   </Text>
                   <Badge>Pro</Badge>
                 </View>
                 <View className="flex-row flex-wrap items-center gap-4">
                   <View className="flex-row items-center gap-1">
                     <Building2 size={14} color={iconColor.muted} />
-                    <Text className="text-slate-500">Acme Corp</Text>
+                    <Text className="text-ink-subtle">Acme Corp</Text>
                   </View>
                   <View className="flex-row items-center gap-1">
                     <MapPin size={14} color={iconColor.muted} />
-                    <Text className="text-slate-500">San Francisco, CA</Text>
+                    <Text className="text-ink-subtle">San Francisco, CA</Text>
                   </View>
                   <View className="flex-row items-center gap-1">
                     <Clock size={14} color={iconColor.muted} />
-                    <Text className="text-slate-500">PST (UTC-8)</Text>
+                    <Text className="text-ink-subtle">PST (UTC-8)</Text>
                   </View>
                 </View>
               </View>
@@ -243,14 +241,14 @@ export default function UserProfileScreen() {
               className={cn(
                 'rounded-full px-4 py-2',
                 isActive
-                  ? 'bg-brand-900'
-                  : 'border border-slate-200 bg-white active:bg-slate-100'
+                  ? 'bg-sidebar'
+                  : 'border border-surface-border bg-white active:bg-surface-muted'
               )}
             >
               <Text
                 className={cn(
                   'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-slate-600'
+                  isActive ? 'text-white' : 'text-ink-muted'
                 )}
               >
                 {tab.label}
@@ -326,19 +324,19 @@ export default function UserProfileScreen() {
                     key={stat.label}
                     className={cn(
                       'flex-row items-center justify-between py-2',
-                      i !== quickStats.length - 1 && 'border-b border-slate-100'
+                      i !== quickStats.length - 1 && 'border-b border-surface-muted'
                     )}
                   >
                     <View>
-                      <Text className="text-sm font-medium text-brown">
+                      <Text className="text-sm font-medium text-ink">
                         {stat.value}
                       </Text>
-                      <Text className="text-xs text-slate-500">
+                      <Text className="text-xs text-ink-subtle">
                         {stat.label}
                       </Text>
                     </View>
-                    <View className="rounded-full bg-cream px-2 py-0.5">
-                      <Text className="text-[10px] text-slate-400">
+                    <View className="rounded-full bg-surface-page px-2 py-0.5">
+                      <Text className="text-caption text-ink-faint">
                         {stat.period}
                       </Text>
                     </View>
@@ -357,12 +355,12 @@ export default function UserProfileScreen() {
                     key={i}
                     className="flex-row items-start gap-3 px-6 py-3"
                   >
-                    <View className="mt-1 h-2 w-2 rounded-full bg-brand-400" />
+                    <View className="mt-1 h-2 w-2 rounded-full bg-primary-400" />
                     <View className="flex-1">
-                      <Text className="text-sm text-slate-700">
+                      <Text className="text-sm text-ink-muted">
                         {item.action}
                       </Text>
-                      <Text className="text-xs text-slate-400">{item.time}</Text>
+                      <Text className="text-xs text-ink-faint">{item.time}</Text>
                     </View>
                   </View>
                 ))}
@@ -392,12 +390,12 @@ export default function UserProfileScreen() {
                         </View>
                         <View className="flex-1">
                           <View className="flex-row items-center gap-2">
-                            <Text className="font-semibold text-brown">
+                            <Text className="font-semibold text-ink">
                               {platform.name}
                             </Text>
                             <Badge variant="success">Connected</Badge>
                           </View>
-                          <Text className="mt-0.5 text-sm text-slate-500">
+                          <Text className="mt-0.5 text-sm text-ink-subtle">
                             {platform.handle} · {platform.followers} followers
                           </Text>
                         </View>
@@ -426,14 +424,14 @@ export default function UserProfileScreen() {
           <Card className="border-dashed">
             <Pressable className="active:opacity-70">
               <CardContent className="flex-row items-center justify-center gap-3 py-8">
-                <View className="h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                <View className="h-10 w-10 items-center justify-center rounded-xl bg-surface-muted">
                   <Link2 size={20} color={iconColor.muted} />
                 </View>
                 <View>
-                  <Text className="font-medium text-brown">
+                  <Text className="font-medium text-ink">
                     Connect Another Platform
                   </Text>
-                  <Text className="text-sm text-slate-500">
+                  <Text className="text-sm text-ink-subtle">
                     Facebook, TikTok, Pinterest, and more
                   </Text>
                 </View>
@@ -460,21 +458,21 @@ export default function UserProfileScreen() {
                 key={pref.label}
                 className={cn(
                   'flex-row items-center justify-between py-4',
-                  i !== prefs.length - 1 && 'border-b border-slate-100'
+                  i !== prefs.length - 1 && 'border-b border-surface-muted'
                 )}
               >
                 <View className="flex-1 pr-4">
-                  <Text className="text-sm font-medium text-brown">
+                  <Text className="text-sm font-medium text-ink">
                     {pref.label}
                   </Text>
-                  <Text className="mt-0.5 text-xs text-slate-500">
+                  <Text className="mt-0.5 text-xs text-ink-subtle">
                     {pref.description}
                   </Text>
                 </View>
                 <Switch
                   value={pref.enabled}
                   onValueChange={() => togglePref(i)}
-                  trackColor={{ false: '#E2E8F0', true: palette.brand[600] }}
+                  trackColor={{ false: colors.surface.border, true: colors.primary[600] }}
                   thumbColor={palette.white}
                 />
               </View>
@@ -493,12 +491,12 @@ export default function UserProfileScreen() {
               </View>
             </CardHeader>
             <CardContent>
-              <View className="flex-row items-center justify-between rounded-lg border border-slate-100 bg-cream p-4">
+              <View className="flex-row items-center justify-between rounded-lg border border-surface-muted bg-surface-page p-4">
                 <View className="flex-1 pr-3">
-                  <Text className="text-sm font-medium text-brown">
+                  <Text className="text-sm font-medium text-ink">
                     Password last changed
                   </Text>
-                  <Text className="text-xs text-slate-500">
+                  <Text className="text-xs text-ink-subtle">
                     December 15, 2025
                   </Text>
                 </View>
@@ -517,16 +515,16 @@ export default function UserProfileScreen() {
               </View>
             </CardHeader>
             <CardContent>
-              <View className="flex-row items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+              <View className="flex-row items-center justify-between rounded-lg border border-success-soft bg-success-soft p-4">
                 <View className="flex-1 flex-row items-center gap-3">
-                  <View className="h-10 w-10 items-center justify-center rounded-lg bg-emerald-100">
+                  <View className="h-10 w-10 items-center justify-center rounded-lg bg-success-soft">
                     <Smartphone size={20} color={iconColor.success} />
                   </View>
                   <View>
-                    <Text className="text-sm font-medium text-brown">
+                    <Text className="text-sm font-medium text-ink">
                       Authenticator App
                     </Text>
-                    <Text className="text-xs text-emerald-600">
+                    <Text className="text-xs text-success">
                       Enabled · Last verified 3 days ago
                     </Text>
                   </View>
@@ -548,21 +546,21 @@ export default function UserProfileScreen() {
                   key={i}
                   className={cn(
                     'flex-row items-center justify-between px-6 py-4',
-                    i !== sessions.length - 1 && 'border-b border-slate-100'
+                    i !== sessions.length - 1 && 'border-b border-surface-muted'
                   )}
                 >
                   <View className="flex-1 flex-row items-center gap-3">
                     <View
                       className={cn(
                         'h-2 w-2 rounded-full',
-                        session.current ? 'bg-emerald-500' : 'bg-slate-300'
+                        session.current ? 'bg-success' : 'bg-surface-border'
                       )}
                     />
                     <View>
-                      <Text className="text-sm font-medium text-brown">
+                      <Text className="text-sm font-medium text-ink">
                         {session.device}
                       </Text>
-                      <Text className="text-xs text-slate-500">
+                      <Text className="text-xs text-ink-subtle">
                         {session.location} · {session.time}
                       </Text>
                     </View>

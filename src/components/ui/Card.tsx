@@ -6,7 +6,7 @@ export function Card({ className, ...props }: ViewProps & { className?: string }
   return (
     <View
       className={cn(
-        'rounded-lg border border-slate-200 bg-white shadow-sm',
+        'rounded-card border border-surface-border bg-white shadow-sm',
         className
       )}
       {...props}
@@ -28,7 +28,7 @@ export function CardTitle({
   return (
     <Text
       className={cn(
-        'text-base font-semibold leading-tight text-brown',
+        'text-base font-semibold leading-tight text-ink',
         className
       )}
       {...props}
@@ -41,7 +41,7 @@ export function CardDescription({
   ...props
 }: TextProps & { className?: string }) {
   return (
-    <Text className={cn('text-sm text-slate-500', className)} {...props} />
+    <Text className={cn('text-sm text-ink-subtle', className)} {...props} />
   );
 }
 

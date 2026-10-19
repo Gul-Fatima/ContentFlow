@@ -14,7 +14,7 @@ import { Card } from '../../src/components/ui/Card';
 import { FadeIn } from '../../src/components/ui/FadeIn';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
-import { iconColor } from '../../src/lib/theme';
+import { colors, iconColor } from '../../src/lib/theme';
 
 type NotificationType = 'approval' | 'published' | 'goal' | 'comment' | 'system';
 
@@ -95,11 +95,11 @@ const TABS: { id: FilterTab; label: string }[] = [
 ];
 
 const ICON_STYLES: Record<NotificationType, { bg: string; color: string }> = {
-  approval: { bg: 'bg-brand-100', color: iconColor.primary },
-  published: { bg: 'bg-emerald-100', color: iconColor.success },
-  goal: { bg: 'bg-amber-100', color: iconColor.warning },
-  comment: { bg: 'bg-blue-100', color: '#2563EB' },
-  system: { bg: 'bg-slate-100', color: iconColor.subtle },
+  approval: { bg: 'bg-primary-100', color: iconColor.primary },
+  published: { bg: 'bg-success-soft', color: iconColor.success },
+  goal: { bg: 'bg-warning-soft', color: iconColor.warning },
+  comment: { bg: 'bg-accent-comment-soft', color: colors.accent.comment },
+  system: { bg: 'bg-surface-muted', color: iconColor.subtle },
 };
 
 function NotificationIcon({ type }: { type: NotificationType }) {
@@ -159,12 +159,12 @@ export default function NotificationsScreen() {
       {/* Page header */}
       <View className="flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <View className="flex-row items-center gap-3">
-          <View className="h-12 w-12 items-center justify-center rounded-xl bg-brand-100">
+          <View className="h-12 w-12 items-center justify-center rounded-xl bg-primary-100">
             <Bell size={24} color={iconColor.primary} />
           </View>
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-brown">Notifications</Text>
-            <Text className="mt-1 text-sm text-slate-500">
+            <Text className="text-2xl font-bold text-ink">Notifications</Text>
+            <Text className="mt-1 text-sm text-ink-subtle">
               You have {unreadCount} unread message
               {unreadCount !== 1 ? 's' : ''}
             </Text>
@@ -183,7 +183,7 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Filter pills */}
-      <View className="flex-row flex-wrap gap-2 border-b border-slate-200 pb-4">
+      <View className="flex-row flex-wrap gap-2 border-b border-surface-border pb-4">
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           const showCount = tab.id === 'unread' && unreadCount > 0;
@@ -194,14 +194,14 @@ export default function NotificationsScreen() {
               className={cn(
                 'flex-row items-center rounded-full px-4 py-2',
                 isActive
-                  ? 'bg-brand-900'
-                  : 'border border-slate-200 bg-white active:bg-slate-100'
+                  ? 'bg-sidebar'
+                  : 'border border-surface-border bg-white active:bg-surface-muted'
               )}
             >
               <Text
                 className={cn(
                   'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-slate-600'
+                  isActive ? 'text-white' : 'text-ink-muted'
                 )}
               >
                 {tab.label}
@@ -210,13 +210,13 @@ export default function NotificationsScreen() {
                 <View
                   className={cn(
                     'ml-2 items-center justify-center rounded-full px-2 py-0.5',
-                    isActive ? 'bg-white/20' : 'bg-brand-100'
+                    isActive ? 'bg-white/20' : 'bg-primary-100'
                   )}
                 >
                   <Text
                     className={cn(
                       'text-xs',
-                      isActive ? 'text-white' : 'text-brand-600'
+                      isActive ? 'text-white' : 'text-primary-600'
                     )}
                   >
                     {unreadCount}
@@ -238,7 +238,7 @@ export default function NotificationsScreen() {
                   className={cn(
                     'overflow-hidden',
                     !notification.read
-                      ? 'border-brand-100 bg-brand-50'
+                      ? 'border-primary-100 bg-primary-50'
                       : 'bg-white'
                   )}
                 >
@@ -253,25 +253,25 @@ export default function NotificationsScreen() {
                           className={cn(
                             'flex-1 text-base',
                             !notification.read
-                              ? 'font-semibold text-brown'
-                              : 'font-medium text-brand-800'
+                              ? 'font-semibold text-ink'
+                              : 'font-medium text-ink'
                           )}
                         >
                           {notification.title}
                         </Text>
-                        <Text className="text-sm text-slate-500">
+                        <Text className="text-sm text-ink-subtle">
                           {notification.time}
                         </Text>
                       </View>
 
-                      <Text className="text-sm leading-relaxed text-slate-600">
+                      <Text className="text-sm leading-relaxed text-ink-muted">
                         {notification.description}
                       </Text>
                     </View>
 
                     {!notification.read && (
                       <View className="w-4 items-center justify-center">
-                        <View className="h-2.5 w-2.5 rounded-full bg-brand-600" />
+                        <View className="h-2.5 w-2.5 rounded-full bg-primary-600" />
                       </View>
                     )}
                   </View>
@@ -281,14 +281,14 @@ export default function NotificationsScreen() {
           ))}
         </View>
       ) : (
-        <View className="items-center rounded-2xl border-2 border-dashed border-slate-200 bg-cream/50 px-4 py-16">
-          <View className="mb-4 h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+        <View className="items-center rounded-2xl border-2 border-dashed border-surface-border bg-surface-page/50 px-4 py-16">
+          <View className="mb-4 h-12 w-12 items-center justify-center rounded-full bg-surface-muted">
             <Bell size={24} color={iconColor.muted} />
           </View>
-          <Text className="mb-1 text-lg font-medium text-brown">
+          <Text className="mb-1 text-lg font-medium text-ink">
             No notifications found
           </Text>
-          <Text className="max-w-sm text-center text-slate-500">
+          <Text className="max-w-sm text-center text-ink-subtle">
             {activeTab === 'all'
               ? "You're all caught up! There are no new notifications at this time."
               : `There are no notifications in the "${activeLabel}" category.`}

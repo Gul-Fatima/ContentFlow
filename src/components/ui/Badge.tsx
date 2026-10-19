@@ -16,21 +16,21 @@ export interface BadgeProps extends ViewProps {
 }
 
 const variants: Record<NonNullable<BadgeProps['variant']>, string> = {
-  default: 'border-transparent bg-brand-600',
-  secondary: 'border-transparent bg-slate-100',
-  success: 'border-transparent bg-emerald-100',
-  warning: 'border-transparent bg-amber-100',
-  error: 'border-transparent bg-rose-100',
-  outline: 'border-slate-200 bg-transparent',
+  default: 'border-transparent bg-primary-600',
+  secondary: 'border-transparent bg-surface-muted',
+  success: 'border-transparent bg-success-soft',
+  warning: 'border-transparent bg-warning-soft',
+  error: 'border-transparent bg-danger-soft',
+  outline: 'border-surface-border bg-transparent',
 };
 
 const textVariants: Record<NonNullable<BadgeProps['variant']>, string> = {
   default: 'text-white',
-  secondary: 'text-brown',
-  success: 'text-emerald-700',
-  warning: 'text-amber-700',
-  error: 'text-rose-700',
-  outline: 'text-brown',
+  secondary: 'text-ink',
+  success: 'text-success-text',
+  warning: 'text-warning-text',
+  error: 'text-danger-text',
+  outline: 'text-ink',
 };
 
 export function Badge({
@@ -49,7 +49,7 @@ export function Badge({
   return (
     <View
       className={cn(
-        'flex-row items-center self-start rounded-full border px-2.5 py-0.5',
+        'flex-row items-center self-start rounded-pill border px-2.5 py-0.5',
         variants[variant],
         className
       )}

@@ -21,6 +21,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ROUTES, type AppRoute } from '../../constants/routes';
 import { useSidebar } from '../../context/SidebarContext';
+import { colors } from '../../lib/theme';
 import { cn } from '../../lib/utils';
 
 const navItems = [
@@ -41,10 +42,10 @@ const navItems = [
   { route: ROUTES.analytics, label: 'Analytics', icon: BarChart3 },
 ] as const;
 
-const ACTIVE_ICON = '#A5B4FC';
-const INACTIVE_ICON = '#94A3B8';
-const ACTIVE_BG = 'rgba(99,102,241,0.12)';
-const ACTIVE_BAR = '#6366F1';
+const ACTIVE_ICON = colors.primary[300];
+const INACTIVE_ICON = colors.ink.faint;
+const ACTIVE_BG = 'rgba(99,102,241,0.12)'; // primary-500 at 12% alpha
+const ACTIVE_BAR = colors.primary[500];
 
 /**
  * Structural type rather than the drawer library's own prop type: Expo Router
@@ -72,14 +73,14 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
   };
 
   const logo = (
-    <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600">
-      <Bot size={22} color="#FFFFFF" />
+    <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary-600">
+      <Bot size={22} color={colors.surface.card} />
     </View>
   );
 
   return (
     <View
-      className="flex-1 bg-slate-900"
+      className="flex-1 bg-ink"
       style={{ paddingTop: insets.top }}
     >
       {isCollapsed ? (
@@ -105,7 +106,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         <View className={cn('py-3', isCollapsed ? 'items-center' : 'px-4')}>
-          <Text className="text-xs text-slate-500">
+          <Text className="text-xs text-ink-subtle">
             {isCollapsed ? '...' : 'Main Menu'}
           </Text>
         </View>
@@ -125,7 +126,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                     accessibilityLabel={item.label}
                     className={cn(
                       'h-12 w-12 items-center justify-center rounded-lg',
-                      !isActive && 'active:bg-slate-800'
+                      !isActive && 'active:bg-sidebar-card'
                     )}
                     style={isActive ? { backgroundColor: ACTIVE_BG } : undefined}
                   >
@@ -140,8 +141,8 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                       color={isActive ? ACTIVE_ICON : INACTIVE_ICON}
                     />
                     {badge ? (
-                      <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1">
-                        <Text className="text-[10px] font-semibold text-white">
+                      <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary-600 px-1">
+                        <Text className="text-caption font-semibold text-white">
                           {badge}
                         </Text>
                       </View>
@@ -159,7 +160,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                 accessibilityLabel={item.label}
                 className={cn(
                   'relative mb-1 h-11 w-full flex-row items-center gap-3 rounded-lg px-3',
-                  !isActive && 'active:bg-slate-800'
+                  !isActive && 'active:bg-sidebar-card'
                 )}
                 style={isActive ? { backgroundColor: ACTIVE_BG } : undefined}
               >
@@ -176,15 +177,15 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                 <Text
                   className={cn(
                     'flex-1 text-sm font-medium',
-                    isActive ? 'text-indigo-300' : 'text-slate-400'
+                    isActive ? 'text-primary-300' : 'text-ink-faint'
                   )}
                   numberOfLines={1}
                 >
                   {item.label}
                 </Text>
                 {badge ? (
-                  <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-600 px-1.5">
-                    <Text className="text-[11px] font-semibold text-white">
+                  <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-primary-600 px-1.5">
+                    <Text className="text-caption font-semibold text-white">
                       {badge}
                     </Text>
                   </View>
@@ -206,8 +207,8 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             accessibilityLabel="Pro Plan"
             className="relative h-10 w-10 items-center justify-center rounded-xl bg-orange-500 active:opacity-80"
           >
-            <Crown size={18} color="#FFFFFF" />
-            <View className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-900 bg-emerald-400" />
+            <Crown size={18} color={colors.surface.card} />
+            <View className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-ink bg-success" />
           </Pressable>
 
           {!isMobile && (
@@ -215,7 +216,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
               onPress={toggle}
               accessibilityRole="button"
               accessibilityLabel="Expand sidebar"
-              className="mt-3 h-10 w-10 items-center justify-center rounded-lg border border-white/10 active:bg-slate-800"
+              className="mt-3 h-10 w-10 items-center justify-center rounded-lg border border-white/10 active:bg-sidebar-card"
             >
               <ChevronRight size={18} color={INACTIVE_ICON} />
             </Pressable>
@@ -227,13 +228,13 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
           style={{ paddingBottom: insets.bottom + 12 }}
         >
           <View
-            className="rounded-2xl border bg-slate-800 p-4"
+            className="rounded-2xl border bg-sidebar-card p-4"
             style={{ borderColor: 'rgba(255,255,255,0.08)' }}
           >
             <View className="mb-3 flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
                 <View className="h-6 w-6 items-center justify-center rounded-md bg-orange-500">
-                  <Crown size={12} color="#FFFFFF" />
+                  <Crown size={12} color={colors.surface.card} />
                 </View>
                 <Text className="text-sm font-semibold text-white">
                   Pro Plan
@@ -243,7 +244,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: 'rgba(16,185,129,0.15)' }}
               >
-                <Text className="text-xs font-semibold text-emerald-400">
+                <Text className="text-xs font-semibold text-success">
                   Active
                 </Text>
               </View>
@@ -251,19 +252,19 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
 
             <View className="mb-3">
               <View className="flex-row justify-between">
-                <Text className="text-xs text-slate-400">Posts used</Text>
+                <Text className="text-xs text-ink-faint">Posts used</Text>
                 <Text className="text-xs text-white">142 / 200</Text>
               </View>
-              <View className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-700">
+              <View className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-muted">
                 <View
                   className="h-full rounded-full"
-                  style={{ width: '71%', backgroundColor: '#6D73F3' }}
+                  style={{ width: '71%', backgroundColor: colors.primary[500] }}
                 />
               </View>
             </View>
 
             <View className="mb-4 flex-row justify-between">
-              <Text className="text-xs text-slate-400">AI Credits</Text>
+              <Text className="text-xs text-ink-faint">AI Credits</Text>
               <Text className="text-xs text-white">8,420 left</Text>
             </View>
 
@@ -271,15 +272,15 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
               onPress={() => go(ROUTES.pricing)}
               accessibilityRole="button"
               accessibilityLabel="Upgrade to Enterprise"
-              className="h-10 w-full flex-row items-center justify-center gap-2 rounded-lg bg-indigo-600 active:bg-indigo-500"
+              className="h-10 w-full flex-row items-center justify-center gap-2 rounded-lg bg-primary-600 active:bg-primary-500"
             >
-              <Sparkles size={14} color="#FFFFFF" />
+              <Sparkles size={14} color={colors.surface.card} />
               <Text className="text-xs font-semibold text-white">
                 Upgrade to Enterprise
               </Text>
             </Pressable>
 
-            <Text className="mt-2 text-center text-[11px] text-slate-500">
+            <Text className="mt-2 text-center text-caption text-ink-subtle">
               Renews in 18 days
             </Text>
           </View>
@@ -289,7 +290,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
               onPress={toggle}
               accessibilityRole="button"
               accessibilityLabel="Collapse sidebar"
-              className="mt-3 h-10 w-full items-center justify-center rounded-lg border border-white/10 active:bg-slate-800"
+              className="mt-3 h-10 w-full items-center justify-center rounded-lg border border-white/10 active:bg-sidebar-card"
             >
               <ChevronLeft size={18} color={INACTIVE_ICON} />
             </Pressable>

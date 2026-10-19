@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { cn } from '../../lib/utils';
 
 interface GradientProps extends ViewProps {
-  /** Gradient stops, e.g. `['#F7EAE0', '#FFFFFF']`. */
+  /** Gradient stops, e.g. `[colors.surface.muted, colors.surface.card]`. */
   colors: readonly [string, string, ...string[]];
   start?: { x: number; y: number };
   end?: { x: number; y: number };
