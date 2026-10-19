@@ -1,121 +1,190 @@
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import {
   BarChart3,
   Bot,
-  BrainCircuit,
+  Brain,
   CalendarClock,
   CheckSquare,
+  ChevronLeft,
+  ChevronRight,
   Crown,
-  LayoutDashboard,
-  Settings,
+  LayoutGrid,
   Sparkles,
-  Zap,
 } from 'lucide-react-native';
-import { Avatar } from '../ui/Avatar';
-import { iconColor, palette } from '../../lib/theme';
-
-const AVATAR_SRC =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ROUTES, type AppRoute } from '../../constants/routes';
+import { useSidebar } from '../../context/SidebarContext';
+import { cn } from '../../lib/utils';
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'approval', label: 'Approval Inbox', icon: CheckSquare, badge: 5 },
-  { id: 'scheduler', label: 'Scheduler', icon: CalendarClock, badge: 10 },
-  { id: 'memory', label: 'Brand Memory', icon: BrainCircuit },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { route: ROUTES.dashboard, label: 'Dashboard', icon: LayoutGrid },
+  {
+    route: ROUTES.approval,
+    label: 'Approval Inbox',
+    icon: CheckSquare,
+    badge: 5,
+  },
+  {
+    route: ROUTES.scheduler,
+    label: 'Scheduler',
+    icon: CalendarClock,
+    badge: 10,
+  },
+  { route: ROUTES.memory, label: 'Brand Memory', icon: Brain },
+  { route: ROUTES.analytics, label: 'Analytics', icon: BarChart3 },
 ] as const;
 
-const usagePercent = 71; // 142 / 200
+const ACTIVE_ICON = '#A5B4FC';
+const INACTIVE_ICON = '#94A3B8';
+const ACTIVE_BG = 'rgba(99,102,241,0.12)';
+const ACTIVE_BAR = '#6366F1';
 
 /**
  * Structural type rather than the drawer library's own prop type: Expo Router
- * ships its own copy of `DrawerNavigationHelpers`, so importing the type from
+ * ships its own copy of the drawer helpers, so importing the type from
  * `@react-navigation/drawer` produces a conflicting-prototype error.
  */
 export interface SidebarProps {
   navigation: { closeDrawer: () => void };
+  collapsed: boolean;
 }
 
-export function Sidebar(props: SidebarProps) {
+export function Sidebar({ navigation, collapsed }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const activePage = pathname.replace('/', '').split('/')[0] || 'dashboard';
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const { toggle } = useSidebar();
 
-  const go = (id: string) => {
-    router.push(`/${id}` as never);
-    props.navigation.closeDrawer();
+  const isMobile = width < 768;
+  const isCollapsed = collapsed && !isMobile;
+
+  const go = (route: AppRoute) => {
+    router.navigate(route);
+    navigation.closeDrawer();
   };
 
+  const logo = (
+    <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600">
+      <Bot size={22} color="#FFFFFF" />
+    </View>
+  );
+
   return (
-    <View className="flex-1 bg-brand-900">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        {/* Logo */}
-        <View className="flex-row items-center gap-3 border-b border-brand-800 px-5 py-4">
-          <View className="h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-            <Bot size={18} color={palette.white} />
-          </View>
-          <Text className="text-lg font-bold tracking-tight text-white">
-            Agent.ai
+    <View
+      className="flex-1 bg-slate-900"
+      style={{ paddingTop: insets.top }}
+    >
+      {isCollapsed ? (
+        <View
+          className="items-center justify-center border-b border-white/10"
+          style={{ height: 64 }}
+        >
+          {logo}
+        </View>
+      ) : (
+        <View
+          className="flex-row items-center gap-3 border-b border-white/10 px-4"
+          style={{ height: 64 }}
+        >
+          {logo}
+          <Text className="text-lg font-semibold text-white">Agent.ai</Text>
+        </View>
+      )}
+
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 8 }}
+      >
+        <View className={cn('py-3', isCollapsed ? 'items-center' : 'px-4')}>
+          <Text className="text-xs text-slate-500">
+            {isCollapsed ? '...' : 'Main Menu'}
           </Text>
         </View>
 
-        {/* User profile */}
-        <View className="border-b border-brand-800 px-4 py-4">
-          <Pressable
-            onPress={() => go('profile')}
-            className="w-full flex-row items-center gap-3 rounded-lg bg-brand-800/60 p-3 active:bg-brand-800"
-          >
-            <Avatar fallback="AM" size="sm" src={AVATAR_SRC} />
-            <View className="min-w-0 flex-1">
-              <Text className="text-sm font-semibold text-white" numberOfLines={1}>
-                Alex Morgan
-              </Text>
-              <Text className="text-xs text-slate-400" numberOfLines={1}>
-                Growth Lead
-              </Text>
-            </View>
-          </Pressable>
-        </View>
-
-        {/* Navigation */}
-        <View className="flex-1 px-3 py-4">
-          <Text className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-            Main Menu
-          </Text>
+        <View className={cn(isCollapsed ? 'items-center px-2' : 'px-3')}>
           {navItems.map((item) => {
-            const isActive = activePage === item.id;
+            const isActive = pathname === item.route;
             const Icon = item.icon;
             const badge = 'badge' in item ? item.badge : undefined;
+
+            if (isCollapsed) {
+              return (
+                <View key={item.route} className="mb-1 h-12 w-12">
+                  <Pressable
+                    onPress={() => go(item.route)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.label}
+                    className={cn(
+                      'h-12 w-12 items-center justify-center rounded-lg',
+                      !isActive && 'active:bg-slate-800'
+                    )}
+                    style={isActive ? { backgroundColor: ACTIVE_BG } : undefined}
+                  >
+                    {isActive && (
+                      <View
+                        className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full"
+                        style={{ backgroundColor: ACTIVE_BAR }}
+                      />
+                    )}
+                    <Icon
+                      size={20}
+                      color={isActive ? ACTIVE_ICON : INACTIVE_ICON}
+                    />
+                    {badge ? (
+                      <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1">
+                        <Text className="text-[10px] font-semibold text-white">
+                          {badge}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </Pressable>
+                </View>
+              );
+            }
+
             return (
               <Pressable
-                key={item.id}
-                onPress={() => go(item.id)}
-                className={
-                  isActive
-                    ? 'relative mb-1 w-full flex-row items-center rounded-lg bg-brand-600/10 px-3 py-2.5'
-                    : 'relative mb-1 w-full flex-row items-center rounded-lg px-3 py-2.5 active:bg-brand-800'
-                }
+                key={item.route}
+                onPress={() => go(item.route)}
+                accessibilityRole="button"
+                accessibilityLabel={item.label}
+                className={cn(
+                  'relative mb-1 h-11 w-full flex-row items-center gap-3 rounded-lg px-3',
+                  !isActive && 'active:bg-slate-800'
+                )}
+                style={isActive ? { backgroundColor: ACTIVE_BG } : undefined}
               >
                 {isActive && (
-                  <View className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-500" />
+                  <View
+                    className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full"
+                    style={{ backgroundColor: ACTIVE_BAR }}
+                  />
                 )}
                 <Icon
                   size={20}
-                  color={isActive ? iconColor.active : iconColor.muted}
+                  color={isActive ? ACTIVE_ICON : INACTIVE_ICON}
                 />
                 <Text
-                  className={
-                    isActive
-                      ? 'ml-3 flex-1 text-left text-sm font-medium text-brand-300'
-                      : 'ml-3 flex-1 text-left text-sm font-medium text-slate-400'
-                  }
+                  className={cn(
+                    'flex-1 text-sm font-medium',
+                    isActive ? 'text-indigo-300' : 'text-slate-400'
+                  )}
+                  numberOfLines={1}
                 >
                   {item.label}
                 </Text>
                 {badge ? (
-                  <View className="ml-auto h-5 w-5 items-center justify-center rounded-full bg-brand-600">
-                    <Text className="text-[10px] font-medium text-white">
+                  <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-600 px-1.5">
+                    <Text className="text-[11px] font-semibold text-white">
                       {badge}
                     </Text>
                   </View>
@@ -124,19 +193,57 @@ export function Sidebar(props: SidebarProps) {
             );
           })}
         </View>
+      </ScrollView>
 
-        {/* Pricing plan */}
-        <View className="border-t border-brand-800 px-4 py-4">
-          <View className="rounded-xl border border-brand-700/50 bg-brand-800 p-4">
+      {isCollapsed ? (
+        <View
+          className="items-center border-t border-white/10 py-3"
+          style={{ paddingBottom: insets.bottom + 12 }}
+        >
+          <Pressable
+            onPress={() => go(ROUTES.pricing)}
+            accessibilityRole="button"
+            accessibilityLabel="Pro Plan"
+            className="relative h-10 w-10 items-center justify-center rounded-xl bg-orange-500 active:opacity-80"
+          >
+            <Crown size={18} color="#FFFFFF" />
+            <View className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-900 bg-emerald-400" />
+          </Pressable>
+
+          {!isMobile && (
+            <Pressable
+              onPress={toggle}
+              accessibilityRole="button"
+              accessibilityLabel="Expand sidebar"
+              className="mt-3 h-10 w-10 items-center justify-center rounded-lg border border-white/10 active:bg-slate-800"
+            >
+              <ChevronRight size={18} color={INACTIVE_ICON} />
+            </Pressable>
+          )}
+        </View>
+      ) : (
+        <View
+          className="border-t border-white/10 px-3 pt-3"
+          style={{ paddingBottom: insets.bottom + 12 }}
+        >
+          <View
+            className="rounded-2xl border bg-slate-800 p-4"
+            style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+          >
             <View className="mb-3 flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
-                <View className="h-6 w-6 items-center justify-center rounded-md bg-amber-500">
-                  <Crown size={12} color={palette.white} />
+                <View className="h-6 w-6 items-center justify-center rounded-md bg-orange-500">
+                  <Crown size={12} color="#FFFFFF" />
                 </View>
-                <Text className="text-sm font-bold text-white">Pro Plan</Text>
+                <Text className="text-sm font-semibold text-white">
+                  Pro Plan
+                </Text>
               </View>
-              <View className="rounded-full bg-emerald-400/10 px-2 py-0.5">
-                <Text className="text-[10px] font-semibold text-emerald-400">
+              <View
+                className="rounded-full px-2 py-0.5"
+                style={{ backgroundColor: 'rgba(16,185,129,0.15)' }}
+              >
+                <Text className="text-xs font-semibold text-emerald-400">
                   Active
                 </Text>
               </View>
@@ -145,58 +252,50 @@ export function Sidebar(props: SidebarProps) {
             <View className="mb-3">
               <View className="flex-row justify-between">
                 <Text className="text-xs text-slate-400">Posts used</Text>
-                <Text className="text-xs font-medium text-slate-300">
-                  142 / 200
-                </Text>
+                <Text className="text-xs text-white">142 / 200</Text>
               </View>
-              <View className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-brand-700">
+              <View className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-700">
                 <View
-                  className="h-full rounded-full bg-brand-500"
-                  style={{ width: `${usagePercent}%` }}
+                  className="h-full rounded-full"
+                  style={{ width: '71%', backgroundColor: '#6D73F3' }}
                 />
               </View>
             </View>
 
             <View className="mb-4 flex-row justify-between">
               <Text className="text-xs text-slate-400">AI Credits</Text>
-              <Text className="text-xs font-medium text-slate-300">
-                8,420 left
-              </Text>
+              <Text className="text-xs text-white">8,420 left</Text>
             </View>
 
             <Pressable
-              onPress={() => go('pricing')}
-              className="w-full flex-row items-center justify-center gap-2 rounded-lg bg-brand-600 py-2.5 active:bg-brand-500"
+              onPress={() => go(ROUTES.pricing)}
+              accessibilityRole="button"
+              accessibilityLabel="Upgrade to Enterprise"
+              className="h-10 w-full flex-row items-center justify-center gap-2 rounded-lg bg-indigo-600 active:bg-indigo-500"
             >
-              <Sparkles size={14} color={palette.white} />
+              <Sparkles size={14} color="#FFFFFF" />
               <Text className="text-xs font-semibold text-white">
                 Upgrade to Enterprise
               </Text>
             </Pressable>
 
-            <Text className="mt-2 text-center text-[10px] text-slate-500">
+            <Text className="mt-2 text-center text-[11px] text-slate-500">
               Renews in 18 days
             </Text>
           </View>
-        </View>
-      </ScrollView>
 
-      {/* Bottom actions */}
-      <View className="border-t border-brand-800 p-3">
-        <Pressable
-          onPress={() => go('profile')}
-          className="w-full flex-row items-center rounded-lg px-3 py-2 active:bg-brand-800"
-        >
-          <Settings size={18} color={iconColor.muted} />
-          <Text className="ml-3 text-sm font-medium text-slate-400">
-            Settings
-          </Text>
-        </Pressable>
-        <View className="mt-1 flex-row items-center justify-center gap-1 p-2">
-          <Zap size={14} color={iconColor.muted} />
-          <Text className="text-xs text-slate-500">Agent.ai MVP</Text>
+          {!isMobile && (
+            <Pressable
+              onPress={toggle}
+              accessibilityRole="button"
+              accessibilityLabel="Collapse sidebar"
+              className="mt-3 h-10 w-full items-center justify-center rounded-lg border border-white/10 active:bg-slate-800"
+            >
+              <ChevronLeft size={18} color={INACTIVE_ICON} />
+            </Pressable>
+          )}
         </View>
-      </View>
+      )}
     </View>
   );
 }

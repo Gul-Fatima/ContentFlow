@@ -16,6 +16,7 @@ import { Button } from '../src/components/ui/Button';
 import { FadeIn } from '../src/components/ui/FadeIn';
 import { Grid } from '../src/components/ui/Grid';
 import { iconColor, palette } from '../src/lib/theme';
+import { ROUTES } from '../src/constants/routes';
 
 const CHAPTERS = [
   {
@@ -52,8 +53,9 @@ export default function WatchDemoScreen() {
   const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const enterApp = () => router.push('/dashboard');
-  const goBack = () => router.push('/');
+  const enterApp = () => router.push(ROUTES.dashboard);
+  const goBack = () =>
+    router.canGoBack() ? router.back() : router.replace(ROUTES.home);
 
   return (
     <View className="flex-1 bg-cream" style={{ paddingTop: insets.top }}>

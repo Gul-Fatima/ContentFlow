@@ -29,6 +29,7 @@ import { Card, CardContent } from '../src/components/ui/Card';
 import { FadeIn } from '../src/components/ui/FadeIn';
 import { Grid } from '../src/components/ui/Grid';
 import { iconColor, palette } from '../src/lib/theme';
+import { ROUTES } from '../src/constants/routes';
 
 const FEATURES = [
   {
@@ -143,8 +144,8 @@ const FOOTER_COLUMNS = [
 export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const enterApp = () => router.push('/dashboard');
-  const watchDemo = () => router.push('/demo');
+  const enterApp = () => router.push(ROUTES.signIn);
+  const watchDemo = () => router.push(ROUTES.demo);
 
   return (
     <View className="flex-1 bg-cream" style={{ paddingTop: insets.top }}>
@@ -162,7 +163,7 @@ export default function LandingScreen() {
             </View>
             <View className="flex-row items-center gap-3">
               <Button variant="ghost" onPress={enterApp}>
-                Log in
+                Sign in
               </Button>
               <Button onPress={enterApp}>Get Started</Button>
             </View>

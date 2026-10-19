@@ -1,8 +1,17 @@
-import { Pressable, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Bell, Search } from 'lucide-react-native';
+import { useCallback, useEffect } from 'react';
+import {
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { useNavigation, useRouter } from 'expo-router';
+import { Bell, Menu, Search } from 'lucide-react-native';
 import { Avatar } from '../ui/Avatar';
 import { iconColor } from '../../lib/theme';
+import { ROUTES } from '../../constants/routes';
 
 const AVATAR_SRC =
   'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
@@ -11,17 +20,60 @@ interface HeaderProps {
   title: string;
 }
 
+/**
+ * Structural type rather than the drawer library's own helper type: Expo
+ * Router ships its own copy, so importing the drawer type here causes a
+ * conflicting-prototype error.
+ */
+type DrawerNavigation = {
+  openDrawer?: () => void;
+  getParent?: () => DrawerNavigation | undefined;
+};
+
 export function Header({ title }: HeaderProps) {
   const router = useRouter();
+  const navigation = useNavigation() as unknown as DrawerNavigation;
   const { width } = useWindowDimensions();
   // Mirrors the web app's `hidden md:block` — the search box and the
   // name/role block only appear once there's room for them.
-  const isWide = width >= 768;
+  const isMobile = width < 768;
+  const isWide = !isMobile;
   const hasUnread = true;
+
+  const openNavigation = useCallback(() => {
+    if (navigation.openDrawer) {
+      navigation.openDrawer();
+    } else {
+      navigation.getParent?.()?.openDrawer?.();
+    }
+  }, [navigation]);
+
+  // On web the drawer's scene intercepts trusted mouse presses before
+  // Pressable sees them. The native DOM click still fires, so bridge it.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !isMobile) return;
+    const node = document.querySelector<HTMLElement>(
+      '[aria-label="Open navigation menu"]'
+    );
+    if (!node) return;
+    node.dataset.sidebarBridge = 'on';
+    node.addEventListener('click', openNavigation);
+    return () => node.removeEventListener('click', openNavigation);
+  }, [isMobile, openNavigation]);
 
   return (
     <View className="sticky top-0 z-30 w-full flex-row items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
       <View className="flex-1 flex-row items-center">
+        {isMobile && (
+          <Pressable
+            onPress={openNavigation}
+            accessibilityRole="button"
+            accessibilityLabel="Open navigation menu"
+            className="-my-2 -ml-1 mr-1 h-11 w-11 items-center justify-center rounded-md active:bg-slate-100"
+          >
+            <Menu size={22} color={iconColor.subtle} />
+          </Pressable>
+        )}
         <Text
           className="text-lg font-semibold text-brown"
           numberOfLines={1}
@@ -31,7 +83,7 @@ export function Header({ title }: HeaderProps) {
       </View>
 
       <View className="flex-row items-center gap-3">
-        {isWide && (
+        {isWide ? (
           <View className="relative justify-center">
             <View className="absolute left-2.5 z-10">
               <Search size={16} color={iconColor.muted} />
@@ -42,10 +94,18 @@ export function Header({ title }: HeaderProps) {
               className="h-9 w-64 rounded-md border border-slate-200 bg-cream pl-9 pr-4 text-sm text-brown"
             />
           </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Search"
+            className="h-9 w-9 items-center justify-center rounded-md active:bg-slate-100"
+          >
+            <Search size={20} color={iconColor.subtle} />
+          </Pressable>
         )}
 
         <Pressable
-          onPress={() => router.push('/notifications')}
+          onPress={() => router.push(ROUTES.notifications)}
           className="relative h-9 w-9 items-center justify-center rounded-md active:bg-slate-100"
         >
           <Bell size={20} color={iconColor.subtle} />
@@ -57,7 +117,7 @@ export function Header({ title }: HeaderProps) {
         <View className="h-6 w-px bg-slate-200" />
 
         <Pressable
-          onPress={() => router.push('/profile')}
+          onPress={() => router.push(ROUTES.profile)}
           className="flex-row items-center gap-3 active:opacity-80"
         >
           {isWide && (
