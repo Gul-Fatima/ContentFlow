@@ -7,12 +7,16 @@ export interface LogoProps {
   variant: 'onDark' | 'onLight';
   /** Hide the wordmark text (collapsed sidebar). */
   iconOnly?: boolean;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
-const tileSizes = { sm: 'h-8 w-8', md: 'h-10 w-10' } as const;
-const iconSizes = { sm: 18, md: 22 } as const;
-const wordmarkHeights = { sm: 20, md: 24 } as const;
+const tileSizes = {
+  sm: 'h-8 w-8',
+  md: 'h-10 w-10',
+  lg: 'h-16 w-16 rounded-2xl',
+} as const;
+const iconSizes = { sm: 18, md: 22, lg: 36 } as const;
+const wordmarkHeights = { sm: 20, md: 24, lg: 36 } as const;
 
 /** Brand tile (40x40, or 32x32 when `sm`) plus the IBDA wordmark. */
 export function Logo({ variant, iconOnly, size = 'md' }: LogoProps) {
@@ -36,7 +40,9 @@ export function Logo({ variant, iconOnly, size = 'md' }: LogoProps) {
         ) : (
           <Text
             className={cn(
-              'text-lg font-bold tracking-wide',
+              size === 'lg'
+                ? 'text-3xl font-bold tracking-wide'
+                : 'text-lg font-bold tracking-wide',
               variant === 'onDark' ? 'text-white' : 'text-ink'
             )}
           >

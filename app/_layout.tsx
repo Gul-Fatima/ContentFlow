@@ -1,12 +1,12 @@
 import '../global.css';
 
-import { Stack } from 'expo-router';
+import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Logo } from '../src/components/brand/Logo';
 import { AuthProvider, useAuth } from '../src/providers/AuthProvider';
+
+SplashScreen.preventAutoHideAsync();
 
 /**
  * Route guards.  - authenticated : (app) + onboarding
@@ -21,11 +21,10 @@ function RootNavigator() {
   const { status } = useAuth();
 
   if (status === 'loading') {
-    // Branded splash frame; the animated version lands in task B2.
     return (
-      <View className="flex-1 items-center justify-center bg-sidebar">
-        <Logo variant="onDark" />
-      </View>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+      </Stack>
     );
   }
 
@@ -36,10 +35,11 @@ function RootNavigator() {
       <Stack.Screen name="index" />
       <Stack.Screen name="landing" />
       <Stack.Screen name="demo" />
+      <Stack.Screen name="legal/terms" />
+      <Stack.Screen name="legal/privacy" />
       <Stack.Protected guard={!isAuthenticated}>
         <Stack.Screen name="welcome" />
         <Stack.Screen name="(auth)" />
-        <Stack.Screen name="forgot-password" />
       </Stack.Protected>
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="onboarding" />

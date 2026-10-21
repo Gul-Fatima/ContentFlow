@@ -1,27 +1,34 @@
+import { useState } from 'react';
 import { Redirect } from 'expo-router';
 import { View } from 'react-native';
-import { Logo } from '../src/components/brand/Logo';
+import { AnimatedSplash } from '../src/components/brand/AnimatedSplash';
 import { ROUTES } from '../src/constants/routes';
 import { useAuth } from '../src/providers/AuthProvider';
 
-/**
- * Entry gate for "/". Holds the branded splash frame while the stored session
- * is read, then redirects. The animated splash lands in task B2.
- */
+let splashShown = false;
+
 export default function GateScreen() {
   const { status } = useAuth();
+  const [animationDone, setAnimationDone] = useState(splashShown);
 
-  if (status === 'loading') {
+  if (splashShown || animationDone) {
+    if (status === 'loading') {
+      return <View className="flex-1 bg-sidebar" />;
+    }
     return (
-      <View className="flex-1 items-center justify-center bg-sidebar">
-        <Logo variant="onDark" />
-      </View>
+      <Redirect
+        href={status === 'authenticated' ? ROUTES.dashboard : ROUTES.welcome}
+      />
     );
   }
 
   return (
-    <Redirect
-      href={status === 'authenticated' ? ROUTES.dashboard : ROUTES.welcome}
+    <AnimatedSplash
+      ready={status !== 'loading'}
+      onDone={() => {
+        splashShown = true;
+        setAnimationDone(true);
+      }}
     />
   );
 }

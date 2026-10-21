@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Switch, Text, View } from 'react-native';
+import { ArrowRight } from 'lucide-react-native';
+import { Pressable, Text, View } from 'react-native';
+import { AuthDivider } from '../../src/components/auth/AuthDivider';
+import { AuthShell } from '../../src/components/auth/AuthShell';
+import { Checkbox } from '../../src/components/auth/Checkbox';
+import { FormError, FormNotice } from '../../src/components/auth/FormError';
+import { GoogleButton } from '../../src/components/auth/GoogleButton';
+import { PasswordInput } from '../../src/components/auth/PasswordInput';
 import { Button } from '../../src/components/ui/Button';
-import { Card } from '../../src/components/ui/Card';
 import { Input } from '../../src/components/ui/Input';
 import { ROUTES } from '../../src/constants/routes';
 import { useAuth } from '../../src/providers/AuthProvider';
@@ -12,25 +18,35 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SignInScreen() {
   const { signIn } = useAuth();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [googleNotice, setGoogleNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [touched, setTouched] = useState({ email: false, password: false });
+
+  const emailError =
+    touched.email || submitAttempted
+      ? !EMAIL_PATTERN.test(email.trim())
+        ? 'Enter a valid email address.'
+        : undefined
+      : undefined;
+  const passwordError =
+    touched.password || submitAttempted
+      ? !password
+        ? 'Enter your password.'
+        : undefined
+      : undefined;
 
   const handleSubmit = async () => {
     if (submitting) return;
+    setSubmitAttempted(true);
     setError(null);
 
-    if (!EMAIL_PATTERN.test(email.trim())) {
-      setError('Enter a valid email address.');
-      return;
-    }
-    if (!password) {
-      setError('Enter your password.');
-      return;
-    }
+    if (!EMAIL_PATTERN.test(email.trim())) return;
+    if (!password) return;
 
     setSubmitting(true);
     try {
@@ -44,84 +60,128 @@ export default function SignInScreen() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-surface-page px-4 py-8">
-      <Card padding="lg" className="w-full max-w-md gap-4">
-        {AUTH_IS_DEMO && (
-          <View className="rounded-control bg-primary-50 px-3 py-2">
-            <Text className="text-xs text-primary-700">
-              Demo mode: accounts are stored on this device only.
-            </Text>
-          </View>
-        )}
-
-        <View className="gap-1">
-          <Text className="text-2xl font-bold text-ink">Log in</Text>
+    <AuthShell
+      topRight={
+        <Pressable
+          onPress={() => router.replace(ROUTES.signUp)}
+          accessibilityRole="link"
+          className="rounded-sm px-1 py-2 focus:ring-2 focus:ring-primary-500"
+        >
+          <Text className="text-sm font-semibold text-primary-600">Sign up</Text>
+        </Pressable>
+      }
+    >
+      <View className="gap-4">
+        <View className="gap-2">
+          <Text className="text-2xl font-bold text-ink">Welcome back</Text>
           <Text className="text-sm text-ink-subtle">
-            Welcome back. Sign in to continue.
+            Sign in to continue managing your social presence.
           </Text>
         </View>
 
-        <Input
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="you@company.com"
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          editable={!submitting}
-        />
+        {AUTH_IS_DEMO ? (
+          <FormNotice>
+            Demo mode: accounts are stored on this device only.
+          </FormNotice>
+        ) : null}
 
-        <Input
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Your password"
-          secureTextEntry
-          autoCapitalize="none"
-          autoComplete="current-password"
-          textContentType="password"
-          editable={!submitting}
-          onSubmitEditing={handleSubmit}
-          returnKeyType="go"
-        />
+        {googleNotice ? (
+          <FormNotice>
+            Google sign-in isn&apos;t available yet. Use email and password.
+          </FormNotice>
+        ) : null}
 
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-ink-muted">Remember me</Text>
-          <Switch
-            value={remember}
-            onValueChange={setRemember}
-            disabled={submitting}
-            accessibilityLabel="Remember me"
+        <GoogleButton onPress={() => setGoogleNotice(true)} />
+        <AuthDivider />
+
+        <View className="gap-4">
+          <Input
+            label="Email Address"
+            value={email}
+            onChangeText={(value) => {
+              setEmail(value);
+              setError(null);
+            }}
+            onBlur={() => setTouched((value) => ({ ...value, email: true }))}
+            error={emailError}
+            placeholder="alex@company.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            returnKeyType="next"
+            editable={!submitting}
+            className="h-11 text-base"
+          />
+
+          <PasswordInput
+            label="Password"
+            value={password}
+            onChangeText={(value) => {
+              setPassword(value);
+              setError(null);
+            }}
+            onBlur={() =>
+              setTouched((value) => ({ ...value, password: true }))
+            }
+            error={passwordError}
+            placeholder="Enter your password"
+            autoCapitalize="none"
+            autoComplete="current-password"
+            textContentType="password"
+            returnKeyType="done"
+            onSubmitEditing={handleSubmit}
+            editable={!submitting}
+            className="h-11 text-base"
           />
         </View>
 
-        {error ? (
-          <Text
-            className="text-sm text-danger-text"
-            accessibilityLiveRegion="polite"
-            accessibilityRole="alert"
+        <View className="flex-row items-center justify-between">
+          <Checkbox
+            checked={remember}
+            onChange={setRemember}
+            disabled={submitting}
           >
-            {error}
-          </Text>
-        ) : null}
+            Remember me
+          </Checkbox>
+          <Pressable
+            onPress={() => router.push(ROUTES.forgotPassword)}
+            accessibilityRole="link"
+            className="rounded-sm px-1 py-2 focus:ring-2 focus:ring-primary-500"
+          >
+            <Text className="text-sm font-medium text-primary-600">
+              Forgot password?
+            </Text>
+          </Pressable>
+        </View>
 
-        <Button size="lg" fullWidth loading={submitting} onPress={handleSubmit}>
-          Sign in
+        {error ? <FormError>{error}</FormError> : null}
+
+        <Button
+          size="lg"
+          fullWidth
+          loading={submitting}
+          onPress={handleSubmit}
+          rightIcon={<ArrowRight size={18} color="#FFFFFF" />}
+        >
+          Sign In
         </Button>
 
-        <View className="flex-row items-center justify-center gap-1">
-          <Text className="text-sm text-ink-subtle">New to IBDA?</Text>
-          <Button
-            variant="ghost"
-            size="sm"
+        <View className="mt-2 flex-row items-center justify-center gap-1">
+          <Text className="text-sm text-ink-subtle">
+            Don&apos;t have an account?
+          </Text>
+          <Pressable
             onPress={() => router.replace(ROUTES.signUp)}
+            accessibilityRole="link"
+            className="rounded-sm px-1 py-2 focus:ring-2 focus:ring-primary-500"
           >
-            Create an account
-          </Button>
+            <Text className="text-sm font-semibold text-primary-600">
+              Sign up free
+            </Text>
+          </Pressable>
         </View>
-      </Card>
-    </View>
+      </View>
+    </AuthShell>
   );
 }

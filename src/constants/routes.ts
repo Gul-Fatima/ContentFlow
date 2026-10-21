@@ -5,6 +5,8 @@ export const ROUTES = {
   welcome: '/welcome',
   onboarding: '/onboarding',
   forgotPassword: '/forgot-password',
+  terms: '/legal/terms',
+  privacy: '/legal/privacy',
   demo: '/demo',
   signIn: '/sign-in',
   signUp: '/sign-up',

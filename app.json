@@ -7,6 +7,9 @@
     "scheme": "agentai",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#0F172A"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
