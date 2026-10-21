@@ -5,6 +5,10 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string;
+  /** Free-text job title shown next to the name; empty when unknown. */
+  role?: string;
+  /** Organisation the user belongs to; empty when unknown. */
+  company?: string;
 }
 
 export interface Session {

@@ -8,18 +8,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Bell, HelpCircle, Link } from 'lucide-react-native';
 import { Logo } from '../brand/Logo';
-import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
 import { iconColor } from '../../lib/theme';
 import { ROUTES } from '../../constants/routes';
-import { MOCK_USER } from '../../constants/user';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { ProfileMenu } from './ProfileMenu';
 
 const HIT_SLOP = { top: 4, bottom: 4, left: 4, right: 4 };
-
-const initials = MOCK_USER.name
-  .split(' ')
-  .map((part) => part[0])
-  .join('');
 
 export function Header() {
   const router = useRouter();
@@ -29,7 +24,7 @@ export function Header() {
   const isMobile = width < 768;
   const hasUnread = true;
 
-  const firstName = MOCK_USER.name.split(' ')[0];
+  const { user, firstName, role } = useCurrentUser();
 
   const goConnections = () => {
     // `tab=connected` is read by the profile screen in a later task.
@@ -124,22 +119,19 @@ export function Header() {
           </>
         )}
 
-        <Pressable
-          onPress={() => router.navigate(ROUTES.profile)}
-          accessibilityRole="button"
-          accessibilityLabel="Open profile"
-          className="flex-row items-center gap-3 active:opacity-80"
-        >
+        <View className="flex-row items-center gap-3">
           {!isMobile && (
             <View className="items-end">
               <Text className="text-sm font-semibold text-ink">
-                {MOCK_USER.name}
+                {user?.name ?? ''}
               </Text>
-              <Text className="text-xs text-ink-subtle">{MOCK_USER.role}</Text>
+              {role ? (
+                <Text className="text-xs text-ink-subtle">{role}</Text>
+              ) : null}
             </View>
           )}
-          <Avatar fallback={initials} size={isMobile ? 'xs' : 'md'} />
-        </Pressable>
+          <ProfileMenu size={isMobile ? 'xs' : 'md'} />
+        </View>
       </View>
     </View>
   );

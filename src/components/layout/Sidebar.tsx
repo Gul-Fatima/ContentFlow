@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -21,7 +20,7 @@ import { BRAND } from '../../constants/brand';
 import { NAV_ITEMS } from '../../constants/nav';
 import { ROUTES, type AppRoute } from '../../constants/routes';
 import { useSidebar } from '../../context/SidebarContext';
-import { useAuth } from '../../providers/AuthProvider';
+import { useLogout } from '../../hooks/useLogout';
 import { colors } from '../../lib/theme';
 import { cn } from '../../lib/utils';
 
@@ -47,8 +46,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { toggle } = useSidebar();
-  const { signOut } = useAuth();
-  const [loggingOut, setLoggingOut] = useState(false);
+  const { logout, isLoggingOut } = useLogout(() => navigation.closeDrawer());
 
   // 768–1023 is always the collapsed icon rail; the toggle is desktop-only.
   const isDesktop = width >= 1024;
@@ -57,18 +55,6 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
   const go = (route: AppRoute) => {
     router.navigate(route);
     navigation.closeDrawer();
-  };
-
-  const logout = async () => {
-    if (loggingOut) return;
-    setLoggingOut(true);
-    try {
-      await signOut();
-    } finally {
-      navigation.closeDrawer();
-      router.replace(ROUTES.welcome);
-      setLoggingOut(false);
-    }
   };
 
   return (
@@ -214,7 +200,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             size="icon"
             className="mt-3 h-12 w-12"
             accessibilityLabel="Logout"
-            loading={loggingOut}
+            loading={isLoggingOut}
             leftIcon={<LogOut size={18} color={colors.surface.card} />}
             onPress={logout}
           />
@@ -297,7 +283,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             variant="primary"
             fullWidth
             className="mt-3 h-11"
-            loading={loggingOut}
+            loading={isLoggingOut}
             leftIcon={<LogOut size={16} color={colors.surface.card} />}
             onPress={logout}
           >

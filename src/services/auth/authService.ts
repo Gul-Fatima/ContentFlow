@@ -50,11 +50,7 @@ async function persist(session: Session, remember: boolean): Promise<void> {
     await secureRemove(SESSION_KEY);
     return;
   }
-  try {
-    await secureSet(SESSION_KEY, JSON.stringify(session));
-  } catch {
-    // Storage unavailable (e.g. blocked localStorage): stay memory-only.
-  }
+  await secureSet(SESSION_KEY, JSON.stringify(session));
 }
 
 export interface AuthCredentials extends SignInInput {
@@ -72,8 +68,8 @@ export async function signUp({
   remember = true,
 }: AuthSignUp): Promise<Session> {
   const session = await adapter.signUp({ name, email, password });
-  memorySession = session;
   await persist(session, remember);
+  memorySession = session;
   return session;
 }
 
@@ -83,8 +79,8 @@ export async function signIn({
   remember,
 }: AuthCredentials): Promise<Session> {
   const session = await adapter.signIn({ email, password });
-  memorySession = session;
   await persist(session, remember);
+  memorySession = session;
   return session;
 }
 

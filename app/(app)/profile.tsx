@@ -12,6 +12,7 @@ import {
   Globe,
   Key,
   Link2,
+  LogOut,
   MapPin,
   Pencil,
   Shield,
@@ -36,7 +37,8 @@ import { Textarea } from '../../src/components/ui/Textarea';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
-import { MOCK_USER } from '../../src/constants/user';
+import { useCurrentUser } from '../../src/hooks/useCurrentUser';
+import { useLogout } from '../../src/hooks/useLogout';
 
 type ProfileTab = 'general' | 'platforms' | 'notifications' | 'security';
 
@@ -149,6 +151,9 @@ export default function UserProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [prefs, setPrefs] = useState(initialPrefs);
 
+  const { user, firstName, lastName, initials, company } = useCurrentUser();
+  const { logout, isLoggingOut } = useLogout();
+
   const togglePref = (index: number) =>
     setPrefs((prev) =>
       prev.map((pref, i) =>
@@ -179,13 +184,10 @@ export default function UserProfileScreen() {
               <View className="relative">
                 <View
                   className="h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-primary-100 shadow-lg"
-                  accessibilityLabel={MOCK_USER.name}
+                  accessibilityLabel={user?.name ?? ''}
                 >
                   <Text className="text-2xl font-semibold text-primary-700">
-                    {MOCK_USER.name
-                      .split(' ')
-                      .map((part) => part[0])
-                      .join('')}
+                    {initials}
                   </Text>
                 </View>
                 <Pressable className="absolute -bottom-1 -right-1 h-8 w-8 items-center justify-center rounded-full bg-primary-600 active:bg-primary-700">
@@ -196,15 +198,17 @@ export default function UserProfileScreen() {
               <View className="flex-1 gap-1">
                 <View className="flex-row items-center gap-3">
                   <Text className="text-2xl font-bold text-ink">
-                    {MOCK_USER.name}
+                    {user?.name ?? ''}
                   </Text>
                   <Badge variant="primary">Pro</Badge>
                 </View>
                 <View className="flex-row flex-wrap items-center gap-4">
-                  <View className="flex-row items-center gap-1">
-                    <Building2 size={14} color={iconColor.muted} />
-                    <Text className="text-ink-subtle">Acme Corp</Text>
-                  </View>
+                  {company ? (
+                    <View className="flex-row items-center gap-1">
+                      <Building2 size={14} color={iconColor.muted} />
+                      <Text className="text-ink-subtle">{company}</Text>
+                    </View>
+                  ) : null}
                   <View className="flex-row items-center gap-1">
                     <MapPin size={14} color={iconColor.muted} />
                     <Text className="text-ink-subtle">San Francisco, CA</Text>
@@ -253,11 +257,19 @@ export default function UserProfileScreen() {
               </CardHeader>
               <CardContent>
                 <Grid columns={2} gutter={16}>
-                  <Input label="First Name" defaultValue="Alex" editable={isEditing} />
-                  <Input label="Last Name" defaultValue="Morgan" editable={isEditing} />
+                  <Input
+                    label="First Name"
+                    defaultValue={firstName}
+                    editable={isEditing}
+                  />
+                  <Input
+                    label="Last Name"
+                    defaultValue={lastName}
+                    editable={isEditing}
+                  />
                   <Input
                     label="Email"
-                    defaultValue="alex@acmecorp.com"
+                    defaultValue={user?.email ?? ''}
                     keyboardType="email-address"
                     editable={isEditing}
                   />
@@ -556,6 +568,30 @@ export default function UserProfileScreen() {
                   )}
                 </View>
               ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <View className="flex-row items-center gap-2">
+                <LogOut size={18} color={iconColor.muted} />
+                <CardTitle>Sign out</CardTitle>
+              </View>
+            </CardHeader>
+            <CardContent className="gap-3">
+              <Text className="text-sm text-ink-subtle">
+                End the session on this device. You will be returned to the
+                welcome screen.
+              </Text>
+              <Button
+                variant="danger"
+                fullWidth
+                loading={isLoggingOut}
+                leftIcon={<LogOut size={16} color={palette.white} />}
+                onPress={logout}
+              >
+                Sign out
+              </Button>
             </CardContent>
           </Card>
         </View>
