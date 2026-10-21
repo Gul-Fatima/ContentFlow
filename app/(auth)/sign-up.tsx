@@ -13,6 +13,7 @@ import { Input } from '../../src/components/ui/Input';
 import { ROUTES } from '../../src/constants/routes';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { AUTH_IS_DEMO, authErrorMessage } from '../../src/services/auth/authService';
+import { markPending } from '../../src/services/onboarding/onboardingService';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -82,11 +83,12 @@ export default function SignUpScreen() {
 
     setSubmitting(true);
     try {
-      await signUp({
+      const session = await signUp({
         name: name.trim(),
         email: email.trim(),
         password,
       });
+      await markPending(session.user.id);
       router.replace(ROUTES.onboarding);
     } catch (caught) {
       setError(authErrorMessage(caught));

@@ -13,6 +13,7 @@ import { Input } from '../../src/components/ui/Input';
 import { ROUTES } from '../../src/constants/routes';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { AUTH_IS_DEMO, authErrorMessage } from '../../src/services/auth/authService';
+import { getPostAuthRoute } from '../../src/services/onboarding/onboardingService';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -50,8 +51,8 @@ export default function SignInScreen() {
 
     setSubmitting(true);
     try {
-      await signIn({ email: email.trim(), password, remember });
-      router.replace(ROUTES.dashboard);
+      const session = await signIn({ email: email.trim(), password, remember });
+      router.replace(await getPostAuthRoute(session.user.id));
     } catch (caught) {
       setError(authErrorMessage(caught));
     } finally {

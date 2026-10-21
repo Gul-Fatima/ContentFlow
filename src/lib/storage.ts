@@ -51,13 +51,9 @@ export async function secureRemove(key: string): Promise<void> {
 }
 
 export async function kvGet<T>(key: string): Promise<T | null> {
-  try {
-    const raw = await AsyncStorage.getItem(key);
-    if (raw == null) return null;
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
+  const raw = await AsyncStorage.getItem(key);
+  if (raw == null) return null;
+  return JSON.parse(raw) as T;
 }
 
 export async function kvSet<T>(key: string, value: T): Promise<void> {
