@@ -37,6 +37,10 @@ import {
 import { FadeIn } from '../../src/components/ui/FadeIn';
 import { Gradient } from '../../src/components/ui/Gradient';
 import { Grid } from '../../src/components/ui/Grid';
+import { iconTileColor } from '../../src/components/ui/IconTile';
+import { PageHeader } from '../../src/components/ui/PageHeader';
+import { StatCard } from '../../src/components/ui/StatCard';
+import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
@@ -277,109 +281,62 @@ export default function SchedulerScreen() {
   const totalDrafts = posts.filter((p) => p.status === 'draft').length;
 
   const stats = [
-    { label: 'Scheduled', value: totalScheduled, color: 'text-primary-600', bg: 'bg-primary-50' },
-    { label: 'Drafts', value: totalDrafts, color: 'text-warning', bg: 'bg-warning-soft' },
-    { label: 'This Week', value: posts.length, color: 'text-success', bg: 'bg-success-soft' },
-    { label: 'Best Day', value: 'Tuesday', color: 'text-primary-600', bg: 'bg-primary-50' },
+    { label: 'Scheduled', value: String(totalScheduled), tone: 'primary' as const, Icon: Calendar },
+    { label: 'Drafts', value: String(totalDrafts), tone: 'warning' as const, Icon: Edit3 },
+    { label: 'This Week', value: String(posts.length), tone: 'success' as const, Icon: Clock },
+    { label: 'Best Day', value: 'Tuesday', tone: 'primary' as const, Icon: Sparkles },
   ];
 
   return (
     <Screen title="Content Scheduler" contentClassName="gap-6 p-4 pb-16 md:p-8">
       {/* Header */}
-      <View className="flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <View className="flex-1">
-          <Text className="text-2xl font-bold text-ink md:text-3xl">
-            Content Scheduler
-          </Text>
-          <Text className="text-ink-subtle">
-            Plan, schedule, and manage your content calendar across all
-            platforms.
-          </Text>
-        </View>
-        <View className="flex-row flex-wrap gap-3">
-          <Button
-            variant="outline"
-            leftIcon={<Sparkles size={16} color={iconColor.subtle} />}
-          >
-            AI Auto-Schedule
-          </Button>
-          <Button leftIcon={<Plus size={16} color={palette.white} />}>
-            New Post
-          </Button>
-        </View>
-      </View>
+      <PageHeader
+        title="Content Scheduler"
+        description="Plan, schedule, and manage your content calendar across all platforms."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              leftIcon={<Sparkles size={16} color={iconColor.subtle} />}
+            >
+              AI Auto-Schedule
+            </Button>
+            <Button leftIcon={<Plus size={16} color={palette.white} />}>
+              New Post
+            </Button>
+          </>
+        }
+      />
 
       {/* Stats */}
       <Grid columns={4} mobileColumns={2} gutter={16}>
         {stats.map((stat) => (
-          <View
+          <StatCard
             key={stat.label}
-            className={cn(
-              'flex-row items-center justify-between rounded-xl px-4 py-3',
-              stat.bg
-            )}
-          >
-            <Text className="text-sm font-medium text-ink-muted">
-              {stat.label}
-            </Text>
-            <Text className={cn('text-lg font-bold', stat.color)}>
-              {stat.value}
-            </Text>
-          </View>
+            label={stat.label}
+            value={stat.value}
+            tone={stat.tone}
+            icon={<stat.Icon size={24} color={iconTileColor(stat.tone)} />}
+          />
         ))}
       </Grid>
 
       {/* Filters + view toggle */}
       <View className="flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <View className="flex-row flex-wrap gap-2">
-          {FILTERS.map((filter) => {
-            const isActive = activeFilter === filter.id;
-            const count =
+        <Tabs
+          items={FILTERS.map((filter) => ({
+            key: filter.id,
+            label: filter.label,
+            count:
               filter.id === 'all'
                 ? posts.length
                 : filter.id === 'drafts'
                   ? totalDrafts
-                  : undefined;
-            return (
-              <Pressable
-                key={filter.id}
-                onPress={() => setActiveFilter(filter.id)}
-                className={cn(
-                  'flex-row items-center rounded-full px-4 py-2',
-                  isActive
-                    ? 'bg-sidebar'
-                    : 'border border-surface-border bg-white active:bg-surface-muted'
-                )}
-              >
-                <Text
-                  className={cn(
-                    'text-sm font-medium',
-                    isActive ? 'text-white' : 'text-ink-muted'
-                  )}
-                >
-                  {filter.label}
-                </Text>
-                {count !== undefined && (
-                  <View
-                    className={cn(
-                      'ml-2 items-center justify-center rounded-full px-2 py-0.5',
-                      isActive ? 'bg-white/20' : 'bg-surface-muted'
-                    )}
-                  >
-                    <Text
-                      className={cn(
-                        'text-xs',
-                        isActive ? 'text-white' : 'text-ink-muted'
-                      )}
-                    >
-                      {count}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
+                  : undefined,
+          }))}
+          value={activeFilter}
+          onChange={setActiveFilter}
+        />
 
         <View className="flex-row overflow-hidden rounded-lg border border-surface-border">
           {(['week', 'list'] as const).map((mode) => {
@@ -557,11 +514,12 @@ export default function SchedulerScreen() {
                       onPress={() => setSelectedPost(isSelected ? null : post.id)}
                     >
                       <Card
+                        padding="sm"
                         className={cn(
                           isSelected && 'border-primary-300 bg-primary-50'
                         )}
                       >
-                        <CardContent className="p-4">
+                        <CardContent>
                           <View className="flex-row items-start gap-4">
                             <View
                               className={cn(
@@ -588,7 +546,7 @@ export default function SchedulerScreen() {
                                     : 'Draft'}
                                 </Badge>
                                 {post.goalTag && (
-                                  <Badge variant="secondary">
+                                  <Badge variant="neutral">
                                     {post.goalTag}
                                   </Badge>
                                 )}
@@ -615,13 +573,13 @@ export default function SchedulerScreen() {
                               </View>
                             </View>
                             <View className="flex-row items-center gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
+                              <Button variant="ghost" size="icon">
                                 <Eye size={14} color={iconColor.muted} />
                               </Button>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
+                              <Button variant="ghost" size="icon">
                                 <Edit3 size={14} color={iconColor.muted} />
                               </Button>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
+                              <Button variant="ghost" size="icon">
                                 <Trash2 size={14} color={colors.chart.c5} />
                               </Button>
                             </View>
@@ -638,14 +596,14 @@ export default function SchedulerScreen() {
 
         {/* Right rail */}
         <View className="gap-6" style={{ flex: 1 }}>
-          <Card>
-            <CardHeader>
+          <Card padding="none">
+            <CardHeader className="px-5 pt-5">
               <View className="flex-row items-center gap-2">
                 <CalendarClock size={16} color={colors.primary[500]} />
                 <CardTitle className="text-base">Up Next</CardTitle>
               </View>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent>
               {upcomingPosts.map((post, i) => {
                 const config = platformConfig[post.platform];
                 const Icon = config.Icon;
@@ -685,7 +643,7 @@ export default function SchedulerScreen() {
 
           <Gradient
             colors={[colors.primary[50], colors.primary[100]]}
-            className="rounded-lg border border-primary-100 shadow-sm"
+            className="rounded-lg border border-primary-100 p-5 shadow-sm"
           >
             <CardHeader>
               <View className="flex-row items-center gap-2">
@@ -720,7 +678,8 @@ export default function SchedulerScreen() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="mt-3 w-full"
+                fullWidth
+                className="mt-3"
                 rightIcon={<ArrowRight size={14} color={iconColor.primary} />}
               >
                 Apply Suggestions
@@ -728,8 +687,8 @@ export default function SchedulerScreen() {
             </CardContent>
           </Gradient>
 
-          <Card>
-            <CardContent className="p-4">
+          <Card padding="sm">
+            <CardContent>
               <View className="flex-row items-center gap-3">
                 <View className="h-9 w-9 items-center justify-center rounded-lg bg-surface-muted">
                   <Globe size={16} color={iconColor.subtle} />

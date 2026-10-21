@@ -19,7 +19,10 @@ import {
   CardTitle,
 } from '../../src/components/ui/Card';
 import { FadeIn } from '../../src/components/ui/FadeIn';
+import { iconTileColor } from '../../src/components/ui/IconTile';
 import { Gradient } from '../../src/components/ui/Gradient';
+import { PageHeader } from '../../src/components/ui/PageHeader';
+import { StatCard } from '../../src/components/ui/StatCard';
 import { Textarea } from '../../src/components/ui/Textarea';
 import { Screen } from '../../src/components/layout/Screen';
 import { colors, iconColor, palette } from '../../src/lib/theme';
@@ -83,29 +86,25 @@ const stats = [
     label: 'Pending Approvals',
     value: '12',
     Icon: CheckCircle2,
-    color: iconColor.warning,
-    bg: 'bg-warning-soft',
+    tone: 'warning' as const,
   },
   {
     label: 'Scheduled Posts',
     value: '28',
     Icon: Calendar,
-    color: iconColor.primary,
-    bg: 'bg-primary-100',
+    tone: 'primary' as const,
   },
   {
     label: 'Weekly Reach',
     value: '45.2k',
     Icon: Users,
-    color: iconColor.success,
-    bg: 'bg-success-soft',
+    tone: 'success' as const,
   },
   {
     label: 'Engagement Rate',
     value: '4.8%',
     Icon: TrendingUp,
-    color: iconColor.danger,
-    bg: 'bg-danger-soft',
+    tone: 'danger' as const,
   },
 ];
 
@@ -119,44 +118,29 @@ export default function DashboardScreen() {
   return (
     <Screen title="Dashboard" contentClassName="gap-8 p-4 pb-16 md:p-8">
       {/* Welcome */}
-      <View className="flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <View>
-          <Text className="text-2xl font-bold tracking-tight text-ink md:text-3xl">
-            Good morning, Alex
-          </Text>
-          <Text className="text-ink-subtle">
-            Here&apos;s what&apos;s happening with your social strategy today.
-          </Text>
-        </View>
-        <View className="flex-row gap-3">
-          <Button variant="secondary">View Reports</Button>
-          <Button leftIcon={<Sparkles size={16} color={palette.white} />}>
-            New Campaign
-          </Button>
-        </View>
-      </View>
+      <PageHeader
+        title="Good morning, Alex"
+        description="Here's what's happening with your social strategy today."
+        actions={
+          <>
+            <Button variant="secondary">View Reports</Button>
+            <Button leftIcon={<Sparkles size={16} color={palette.white} />}>
+              New Campaign
+            </Button>
+          </>
+        }
+      />
 
       {/* Quick stats */}
       <View className="flex-col gap-4 md:flex-row">
         {stats.map((stat, i) => (
           <FadeIn key={stat.label} delay={i * 60} className="flex-1">
-            <Card className="border-none shadow-sm">
-              <CardContent className="flex-row items-center p-6">
-                <View
-                  className={`h-12 w-12 items-center justify-center rounded-full ${stat.bg}`}
-                >
-                  <stat.Icon size={24} color={stat.color} />
-                </View>
-                <View className="ml-4 gap-1">
-                  <Text className="text-sm font-medium text-ink-subtle">
-                    {stat.label}
-                  </Text>
-                  <Text className="text-2xl font-bold text-ink">
-                    {stat.value}
-                  </Text>
-                </View>
-              </CardContent>
-            </Card>
+            <StatCard
+              label={stat.label}
+              value={stat.value}
+              tone={stat.tone}
+              icon={<stat.Icon size={24} color={iconTileColor(stat.tone)} />}
+            />
           </FadeIn>
         ))}
       </View>
@@ -167,7 +151,7 @@ export default function DashboardScreen() {
           {/* Goal input */}
           <Gradient
             colors={[colors.primary[50], palette.white]}
-            className="rounded-lg border border-primary-100 bg-white shadow-sm"
+            className="rounded-lg border border-primary-100 p-5 shadow-sm"
           >
             <CardHeader>
               <View className="flex-row items-center gap-2">
@@ -182,7 +166,7 @@ export default function DashboardScreen() {
             <CardContent className="gap-4">
               <Textarea
                 placeholder="e.g., Increase our Twitter engagement by 20% this month by focusing on educational threads about AI..."
-                className="min-h-[100px] border-primary-100 bg-white"
+                className="min-h-[100px]"
               />
               <View className="flex-row justify-end">
                 <Button>Generate Plan</Button>
@@ -208,7 +192,7 @@ export default function DashboardScreen() {
               {activeGoals.map((goal, i) => (
                 <FadeIn key={goal.id} delay={i * 80}>
                   <Card>
-                    <CardContent className="p-6">
+                    <CardContent>
                       <View className="mb-4 flex-row items-start justify-between">
                         <View className="flex-1 pr-3">
                           <Text className="font-semibold text-ink">
@@ -218,7 +202,7 @@ export default function DashboardScreen() {
                             {goal.taskCount} tasks remaining
                           </Text>
                         </View>
-                        <Badge variant="secondary">Active</Badge>
+                        <Badge variant="neutral">Active</Badge>
                       </View>
                       <View className="gap-2">
                         <View className="flex-row justify-between">
@@ -254,8 +238,8 @@ export default function DashboardScreen() {
           <View className="gap-3">
             {taskQueue.map((task, i) => (
               <FadeIn key={task.id} axis="x" delay={i * 100}>
-                <Card>
-                  <CardContent className="p-4">
+                <Card padding="sm">
+                  <CardContent>
                     <View className="flex-row items-start gap-3">
                       <View
                         className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${taskDotClass(
@@ -277,7 +261,7 @@ export default function DashboardScreen() {
                             <Clock size={12} color={iconColor.muted} />
                             <Text className="text-xs text-ink-faint">2h ago</Text>
                           </View>
-                          <Button variant="ghost" size="sm" className="h-6 px-2">
+                          <Button variant="ghost" size="sm">
                             Details
                           </Button>
                         </View>
@@ -289,7 +273,10 @@ export default function DashboardScreen() {
             ))}
           </View>
 
-          <Card className="border-dashed border-surface-border bg-surface-page">
+          <Card
+            padding="none"
+            className="border-dashed border-surface-border bg-surface-page"
+          >
             <CardContent className="items-center justify-center py-8">
               <View className="mb-3 h-10 w-10 items-center justify-center rounded-full bg-surface-muted">
                 <Plus size={20} color={iconColor.muted} />

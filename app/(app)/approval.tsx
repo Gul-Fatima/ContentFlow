@@ -20,6 +20,8 @@ import { Badge } from '../../src/components/ui/Badge';
 import { Button } from '../../src/components/ui/Button';
 import { Card } from '../../src/components/ui/Card';
 import { FadeIn } from '../../src/components/ui/FadeIn';
+import { PageHeader } from '../../src/components/ui/PageHeader';
+import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
@@ -143,71 +145,32 @@ export default function ApprovalInboxScreen() {
       title="Approval Inbox"
       contentClassName="gap-6 p-4 pb-16 md:p-8 md:max-w-5xl"
     >
-      <View className="flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <View className="flex-1">
-          <Text className="text-2xl font-bold text-ink md:text-3xl">
-            Approval Inbox
-          </Text>
-          <Text className="text-ink-subtle">
-            Review and manage AI-generated content before it goes live.
-          </Text>
-        </View>
-        <View className="flex-row flex-wrap gap-2">
-          <Button
-            variant="outline"
-            leftIcon={<RefreshCw size={16} color={iconColor.subtle} />}
-          >
-            Regenerate All
-          </Button>
-          <Button>Approve All Selected</Button>
-        </View>
-      </View>
+      <PageHeader
+        title="Approval Inbox"
+        description="Review and manage AI-generated content before it goes live."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              leftIcon={<RefreshCw size={16} color={iconColor.subtle} />}
+            >
+              Regenerate All
+            </Button>
+            <Button>Approve All Selected</Button>
+          </>
+        }
+      />
 
       {/* Platform filters */}
-      <View className="flex-row flex-wrap gap-2">
-        {FILTERS.map((filter) => {
-          const isActive = filter.id === activeTab;
-          const count = filter.id === 'all' ? pendingCount : undefined;
-          return (
-            <Pressable
-              key={filter.id}
-              onPress={() => setActiveTab(filter.id)}
-              className={cn(
-                'flex-row items-center rounded-full px-4 py-2',
-                isActive
-                  ? 'bg-sidebar'
-                  : 'border border-surface-border bg-white active:bg-surface-muted'
-              )}
-            >
-              <Text
-                className={cn(
-                  'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-ink-muted'
-                )}
-              >
-                {filter.label}
-              </Text>
-              {count !== undefined && (
-                <View
-                  className={cn(
-                    'ml-2 items-center justify-center rounded-full px-2 py-0.5',
-                    isActive ? 'bg-white/20' : 'bg-primary-100'
-                  )}
-                >
-                  <Text
-                    className={cn(
-                      'text-xs',
-                      isActive ? 'text-white' : 'text-primary-600'
-                    )}
-                  >
-                    {count}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
+      <Tabs
+        items={FILTERS.map((filter) => ({
+          key: filter.id,
+          label: filter.label,
+          count: filter.id === 'all' ? pendingCount : undefined,
+        }))}
+        value={activeTab}
+        onChange={setActiveTab}
+      />
 
       <View className="gap-6">
         {filteredItems.length === 0 ? (
@@ -227,7 +190,7 @@ export default function ApprovalInboxScreen() {
         ) : (
           filteredItems.map((item, index) => (
             <FadeIn key={item.id} delay={index * 60}>
-              <Card className="overflow-hidden">
+              <Card padding="none" className="overflow-hidden">
                 <View className="flex-col md:flex-row">
                   {/* Content preview */}
                   <View className="flex-1 border-surface-muted p-6 md:border-r">
@@ -248,12 +211,7 @@ export default function ApprovalInboxScreen() {
                           </View>
                         </View>
                       </View>
-                      <Badge
-                        variant="secondary"
-                        className="border-primary-100 bg-primary-50"
-                      >
-                        AI Draft
-                      </Badge>
+                      <Badge variant="primary">AI Draft</Badge>
                     </View>
 
                     <View className="gap-4">
@@ -326,7 +284,7 @@ export default function ApprovalInboxScreen() {
                           <Button
                             variant="danger"
                             size="sm"
-                            className="w-full"
+                            fullWidth
                             leftIcon={<X size={14} color={palette.white} />}
                             onPress={() => handleAction(item.id, 'reject')}
                           >
@@ -335,8 +293,9 @@ export default function ApprovalInboxScreen() {
                         </View>
                         <View className="flex-1">
                           <Button
+                            variant="success"
                             size="sm"
-                            className="w-full bg-success active:bg-success-text"
+                            fullWidth
                             leftIcon={<Check size={14} color={palette.white} />}
                             onPress={() => handleAction(item.id, 'approve')}
                           >

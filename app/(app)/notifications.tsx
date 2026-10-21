@@ -12,6 +12,7 @@ import {
 import { Button } from '../../src/components/ui/Button';
 import { Card } from '../../src/components/ui/Card';
 import { FadeIn } from '../../src/components/ui/FadeIn';
+import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor } from '../../src/lib/theme';
@@ -173,7 +174,7 @@ export default function NotificationsScreen() {
 
         {unreadCount > 0 && (
           <Button
-            variant="outline"
+            variant="secondary"
             onPress={markAllAsRead}
             leftIcon={<CheckCircle2 size={16} color={iconColor.subtle} />}
           >
@@ -183,49 +184,16 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Filter pills */}
-      <View className="flex-row flex-wrap gap-2 border-b border-surface-border pb-4">
-        {TABS.map((tab) => {
-          const isActive = tab.id === activeTab;
-          const showCount = tab.id === 'unread' && unreadCount > 0;
-          return (
-            <Pressable
-              key={tab.id}
-              onPress={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex-row items-center rounded-full px-4 py-2',
-                isActive
-                  ? 'bg-sidebar'
-                  : 'border border-surface-border bg-white active:bg-surface-muted'
-              )}
-            >
-              <Text
-                className={cn(
-                  'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-ink-muted'
-                )}
-              >
-                {tab.label}
-              </Text>
-              {showCount && (
-                <View
-                  className={cn(
-                    'ml-2 items-center justify-center rounded-full px-2 py-0.5',
-                    isActive ? 'bg-white/20' : 'bg-primary-100'
-                  )}
-                >
-                  <Text
-                    className={cn(
-                      'text-xs',
-                      isActive ? 'text-white' : 'text-primary-600'
-                    )}
-                  >
-                    {unreadCount}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
+      <View className="border-b border-surface-border pb-4">
+        <Tabs
+          items={TABS.map((tab) => ({
+            key: tab.id,
+            label: tab.label,
+            count: tab.id === 'unread' && unreadCount > 0 ? unreadCount : undefined,
+          }))}
+          value={activeTab}
+          onChange={(key) => setActiveTab(key as FilterTab)}
+        />
       </View>
 
       {/* List */}
@@ -235,6 +203,7 @@ export default function NotificationsScreen() {
             <FadeIn key={notification.id} delay={i * 50}>
               <Pressable onPress={() => markAsRead(notification.id)}>
                 <Card
+                  padding="none"
                   className={cn(
                     'overflow-hidden',
                     !notification.read
@@ -295,7 +264,7 @@ export default function NotificationsScreen() {
           </Text>
           {activeTab !== 'all' && (
             <Button
-              variant="outline"
+              variant="secondary"
               className="mt-6"
               onPress={() => setActiveTab('all')}
             >

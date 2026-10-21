@@ -13,11 +13,9 @@ export interface TextareaProps extends TextInputProps {
 export const Textarea = forwardRef<TextInput, TextareaProps>(
   ({ className, containerClassName, label, error, ...props }, ref) => {
     return (
-      <View className={cn('w-full', containerClassName)}>
+      <View className={cn('w-full gap-1.5', containerClassName)}>
         {label ? (
-          <Text className="mb-2 text-sm font-medium text-ink-muted">
-            {label}
-          </Text>
+          <Text className="text-sm font-medium text-ink-muted">{label}</Text>
         ) : null}
         <TextInput
           ref={ref}
@@ -25,15 +23,13 @@ export const Textarea = forwardRef<TextInput, TextareaProps>(
           textAlignVertical="top"
           placeholderTextColor={colors.ink.placeholder}
           className={cn(
-            'min-h-[80px] w-full rounded-control border border-surface-border bg-white px-3 py-2 text-sm text-ink',
+            'min-h-24 w-full rounded-control border border-surface-border bg-white px-3 py-2 text-sm text-ink focus:border-primary-500',
             error && 'border-danger',
             className
           )}
           {...props}
         />
-        {error ? (
-          <Text className="mt-1 text-xs text-danger">{error}</Text>
-        ) : null}
+        {error ? <Text className="text-xs text-danger-text">{error}</Text> : null}
       </View>
     );
   }

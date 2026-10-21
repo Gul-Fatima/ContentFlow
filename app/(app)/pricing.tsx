@@ -138,10 +138,12 @@ export default function PricingScreen() {
     <Screen title="Pricing & Billing" contentClassName="gap-10 p-4 pb-16 md:p-8">
       {/* Header */}
       <View className="mx-auto w-full max-w-2xl items-center">
-        <Badge className="mb-4 px-3 py-1">
+        <Badge variant="primary" className="mb-4">
           <View className="flex-row items-center gap-1">
-            <Sparkles size={12} color={palette.white} />
-            <Text className="text-xs font-semibold text-white">Pricing</Text>
+            <Sparkles size={12} color={iconColor.primary} />
+            <Text className="text-xs font-semibold text-primary-700">
+              Pricing
+            </Text>
           </View>
         </Badge>
         <Text className="mb-3 text-center text-2xl font-bold text-ink md:text-3xl">
@@ -291,9 +293,9 @@ export default function PricingScreen() {
                         ? 'secondary'
                         : plan.id === 'enterprise'
                           ? 'primary'
-                          : 'outline'
+                          : 'secondary'
                     }
-                    className="w-full"
+                    fullWidth
                     disabled={plan.current}
                     leftIcon={
                       plan.id === 'enterprise' ? (
@@ -404,8 +406,8 @@ export default function PricingScreen() {
       </Grid>
 
       {/* Billing history */}
-      <Card>
-        <CardHeader>
+      <Card padding="none">
+        <CardHeader className="px-6 pt-6 pb-5">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <Receipt size={18} color={iconColor.muted} />
@@ -420,7 +422,7 @@ export default function PricingScreen() {
             </Button>
           </View>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
           {billingHistory.map((item, i) => (
             <FadeIn key={item.invoice} delay={i * 50}>
               <View

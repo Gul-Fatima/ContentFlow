@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -21,6 +21,8 @@ import {
 } from '../../src/components/ui/Card';
 import { FadeIn } from '../../src/components/ui/FadeIn';
 import { Gradient } from '../../src/components/ui/Gradient';
+import { PageHeader } from '../../src/components/ui/PageHeader';
+import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
 import { colors, iconColor } from '../../src/lib/theme';
 
@@ -79,64 +81,38 @@ export default function AnalyticsScreen() {
       title="Analytics"
       contentClassName="gap-8 p-4 pb-16 md:p-8 md:max-w-7xl"
     >
-      <View className="flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <View>
-          <Text className="text-2xl font-bold text-ink md:text-3xl">
-            Performance Analytics
-          </Text>
-          <Text className="text-ink-subtle">
-            Track your growth and AI optimization impact.
-          </Text>
-        </View>
-        <View className="flex-row items-center gap-3">
+      <PageHeader
+        title="Performance Analytics"
+        description="Track your growth and AI optimization impact."
+        actions={
           <Button
-            variant="outline"
+            variant="secondary"
             leftIcon={<Share2 size={16} color={iconColor.subtle} />}
           >
             Export
           </Button>
-        </View>
-      </View>
+        }
+      />
 
       {/* Range picker */}
-      <View className="-mt-4 flex-row flex-wrap gap-2">
-        {RANGES.map((option) => {
-          const isActive = option === range;
-          return (
-            <Pressable
-              key={option}
-              onPress={() => setRange(option)}
-              className={
-                isActive
-                  ? 'rounded-full bg-primary-600 px-3 py-1.5'
-                  : 'rounded-full border border-surface-border bg-white px-3 py-1.5 active:bg-surface-muted'
-              }
-            >
-              <Text
-                className={
-                  isActive
-                    ? 'text-xs font-medium text-white'
-                    : 'text-xs font-medium text-ink-muted'
-                }
-              >
-                {option}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <Tabs
+        className="-mt-4"
+        items={RANGES.map((option) => ({ key: option, label: option }))}
+        value={range}
+        onChange={setRange}
+      />
 
       {/* KPI cards */}
       <View className="flex-col gap-4 md:flex-row">
         {kpis.map((stat, i) => (
           <FadeIn key={stat.label} delay={i * 60} className="flex-1">
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <View className="mb-4 flex-row items-center justify-between">
                   <View className="rounded-lg bg-surface-muted p-2">
                     <stat.Icon size={20} color={iconColor.subtle} />
                   </View>
-                  <Badge variant={stat.trend === 'up' ? 'success' : 'error'}>
+                  <Badge variant={stat.trend === 'up' ? 'success' : 'danger'}>
                     <View className="flex-row items-center gap-1">
                       {stat.trend === 'up' ? (
                         <ArrowUpRight size={12} color={iconColor.success} />
@@ -206,9 +182,9 @@ export default function AnalyticsScreen() {
         <View className="gap-6" style={{ flex: 1 }}>
           <Gradient
             colors={[colors.primary[600], colors.primary[700]]}
-            className="rounded-lg border-none shadow-sm"
+            className="rounded-lg border-none p-6 shadow-sm"
           >
-            <CardContent className="p-6">
+            <CardContent>
               <View className="mb-4 flex-row items-center gap-2">
                 <Lightbulb size={20} color={colors.chart.c1} />
                 <Text className="text-lg font-bold text-white">
@@ -219,17 +195,21 @@ export default function AnalyticsScreen() {
                 Based on recent performance, posting educational carousels on
                 LinkedIn between 8-10 AM EST is driving 40% higher engagement.
               </Text>
-              <Button className="w-full bg-white" textClassName="text-primary-600">
+              <Button
+                variant="secondary"
+                fullWidth
+                textClassName="text-primary-600"
+              >
                 Adjust Schedule
               </Button>
             </CardContent>
           </Gradient>
 
-          <Card>
-            <CardHeader>
+          <Card padding="none">
+            <CardHeader className="px-5 pt-5">
               <CardTitle>Top Content</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent>
               {topContent.map((post, i) => (
                 <View
                   key={i}

@@ -8,7 +8,6 @@ import {
 import { usePathname, useRouter } from 'expo-router';
 import {
   BarChart3,
-  Bot,
   Brain,
   CalendarClock,
   CheckSquare,
@@ -16,9 +15,13 @@ import {
   ChevronRight,
   Crown,
   LayoutGrid,
+  LogOut,
   Sparkles,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Logo } from '../brand/Logo';
+import { Button } from '../ui/Button';
+import { BRAND } from '../../constants/brand';
 import { ROUTES, type AppRoute } from '../../constants/routes';
 import { useSidebar } from '../../context/SidebarContext';
 import { colors } from '../../lib/theme';
@@ -26,6 +29,7 @@ import { cn } from '../../lib/utils';
 
 const navItems = [
   { route: ROUTES.dashboard, label: 'Dashboard', icon: LayoutGrid },
+  { route: ROUTES.memory, label: 'Brand Memory', icon: Brain },
   {
     route: ROUTES.approval,
     label: 'Approval Inbox',
@@ -38,7 +42,7 @@ const navItems = [
     icon: CalendarClock,
     badge: 10,
   },
-  { route: ROUTES.memory, label: 'Brand Memory', icon: Brain },
+
   { route: ROUTES.analytics, label: 'Analytics', icon: BarChart3 },
 ] as const;
 
@@ -72,11 +76,11 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
     navigation.closeDrawer();
   };
 
-  const logo = (
-    <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary-600">
-      <Bot size={22} color={colors.surface.card} />
-    </View>
-  );
+  const logout = () => {
+    // TODO: clear auth token when backend auth exists.
+    navigation.closeDrawer();
+    router.replace(ROUTES.signIn);
+  };
 
   return (
     <View
@@ -88,15 +92,12 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
           className="items-center justify-center border-b border-white/10"
           style={{ height: 64 }}
         >
-          {logo}
+          <Logo variant="onDark" iconOnly />
         </View>
       ) : (
-        <View
-          className="flex-row items-center gap-3 border-b border-white/10 px-4"
-          style={{ height: 64 }}
-        >
-          {logo}
-          <Text className="text-lg font-semibold text-white">Agent.ai</Text>
+        <View className="border-b border-white/10 px-4 pb-4 pt-4">
+          <Logo variant="onDark" />
+          <Text className="mt-1.5 text-xs text-ink-faint">{BRAND.tagline}</Text>
         </View>
       )}
 
@@ -221,6 +222,15 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
               <ChevronRight size={18} color={INACTIVE_ICON} />
             </Pressable>
           )}
+
+          <Button
+            variant="primary"
+            size="icon"
+            className="mt-3 h-12 w-12"
+            accessibilityLabel="Logout"
+            leftIcon={<LogOut size={18} color={colors.surface.card} />}
+            onPress={logout}
+          />
         </View>
       ) : (
         <View
@@ -295,6 +305,16 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
               <ChevronLeft size={18} color={INACTIVE_ICON} />
             </Pressable>
           )}
+
+          <Button
+            variant="primary"
+            fullWidth
+            className="mt-3 h-11"
+            leftIcon={<LogOut size={16} color={colors.surface.card} />}
+            onPress={logout}
+          >
+            Logout
+          </Button>
         </View>
       )}
     </View>

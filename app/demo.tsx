@@ -17,6 +17,7 @@ import { FadeIn } from '../src/components/ui/FadeIn';
 import { Grid } from '../src/components/ui/Grid';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../src/lib/theme';
 import { ROUTES } from '../src/constants/routes';
+import { BRAND } from '../src/constants/brand';
 
 const CHAPTERS = [
   {
@@ -71,7 +72,7 @@ export default function WatchDemoScreen() {
                 <Bot size={20} color={palette.white} />
               </View>
               <Text className="text-xl font-bold tracking-tight text-ink">
-                Agent.ai
+                {BRAND.name}
               </Text>
             </Pressable>
             <View className="flex-row items-center gap-3">
@@ -99,7 +100,7 @@ export default function WatchDemoScreen() {
 
             <FadeIn delay={100}>
               <Text className="mb-6 text-center text-3xl font-bold tracking-tight text-white md:text-5xl">
-                See how Agent.ai automates{'\n'}
+                See how {BRAND.name} automates{'\n'}
                 <Text className="text-primary-400">
                   your entire workflow
                 </Text>
@@ -150,7 +151,7 @@ export default function WatchDemoScreen() {
                     <View className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-6">
                       <View>
                         <Text className="text-lg font-semibold text-white">
-                          Agent.ai Product Tour
+                          {BRAND.name} Product Tour
                         </Text>
                         <Text className="text-sm text-ink-faint">
                           3:24 • 4K Quality
@@ -234,9 +235,10 @@ export default function WatchDemoScreen() {
                 Start Free Trial
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="lg"
-                className="w-full bg-white sm:w-auto"
+                fullWidth
+                className="sm:w-auto"
                 onPress={goBack}
               >
                 Back to Homepage
@@ -261,11 +263,11 @@ export default function WatchDemoScreen() {
                 <Bot size={20} color={palette.white} />
               </View>
               <Text className="text-xl font-bold tracking-tight text-ink">
-                Agent.ai
+                {BRAND.name}
               </Text>
             </View>
             <Text className="text-sm text-ink-subtle">
-              © 2026 Agent.ai Inc. All rights reserved.
+              © 2026 {BRAND.name} Inc. All rights reserved.
             </Text>
             <View className="flex-row gap-6">
               {['Privacy', 'Terms', 'Contact'].map((link) => (

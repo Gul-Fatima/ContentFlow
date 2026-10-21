@@ -3,20 +3,18 @@ import {
   Platform,
   Pressable,
   Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRouter } from 'expo-router';
-import { Bell, Menu, Search } from 'lucide-react-native';
+import { Bell, HelpCircle, Link, Menu } from 'lucide-react-native';
 import { Avatar } from '../ui/Avatar';
-import { colors, iconColor } from '../../lib/theme';
+import { Button } from '../ui/Button';
+import { iconColor } from '../../lib/theme';
+import { cn } from '../../lib/utils';
 import { ROUTES } from '../../constants/routes';
 import { MOCK_USER } from '../../constants/user';
-
-interface HeaderProps {
-  title: string;
-}
 
 /**
  * Structural type rather than the drawer library's own helper type: Expo
@@ -28,15 +26,23 @@ type DrawerNavigation = {
   getParent?: () => DrawerNavigation | undefined;
 };
 
-export function Header({ title }: HeaderProps) {
+const HIT_SLOP = { top: 4, bottom: 4, left: 4, right: 4 };
+
+export function Header() {
   const router = useRouter();
   const navigation = useNavigation() as unknown as DrawerNavigation;
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  // Mirrors the web app's `hidden md:block` — the search box and the
+  // Mirrors the web app's `hidden md:block` — the help icon and the
   // name/role block only appear once there's room for them.
   const isMobile = width < 768;
-  const isWide = !isMobile;
   const hasUnread = true;
+
+  const firstName = MOCK_USER.name.split(' ')[0];
+  const initials = MOCK_USER.name
+    .split(' ')
+    .map((part) => part[0])
+    .join('');
 
   const openNavigation = useCallback(() => {
     if (navigation.openDrawer) {
@@ -59,74 +65,110 @@ export function Header({ title }: HeaderProps) {
     return () => node.removeEventListener('click', openNavigation);
   }, [isMobile, openNavigation]);
 
+  const goConnections = () => {
+    // `tab=connected` is read by the profile screen in a later task.
+    router.navigate({
+      pathname: ROUTES.profile,
+      params: { tab: 'connected' },
+    });
+  };
+
   return (
-    <View className="sticky top-0 z-30 w-full flex-row items-center justify-between border-b border-surface-border bg-white px-4 py-3">
-      <View className="flex-1 flex-row items-center">
+    <View
+      className="sticky top-0 z-30 w-full border-b border-surface-border bg-white"
+      style={{ paddingTop: insets.top }}
+    >
+      <View
+        className={cn(
+          'flex-row items-center',
+          isMobile ? 'h-14 px-3' : 'h-16 gap-3 px-4'
+        )}
+      >
         {isMobile && (
           <Pressable
             onPress={openNavigation}
             accessibilityRole="button"
             accessibilityLabel="Open navigation menu"
-            className="-my-2 -ml-1 mr-1 h-11 w-11 items-center justify-center rounded-md active:bg-surface-muted"
+            className="-ml-1 h-11 w-11 items-center justify-center rounded-md active:bg-surface-muted"
           >
             <Menu size={22} color={iconColor.subtle} />
           </Pressable>
         )}
+
         <Text
-          className="text-lg font-semibold text-ink"
+          className={cn(
+            'flex-1 font-semibold text-ink',
+            isMobile ? 'text-base' : 'text-lg'
+          )}
           numberOfLines={1}
         >
-          {title}
+          Hi {firstName}!
         </Text>
-      </View>
 
-      <View className="flex-row items-center gap-3">
-        {isWide ? (
-          <View className="relative justify-center">
-            <View className="absolute left-2.5 z-10">
-              <Search size={16} color={iconColor.muted} />
-            </View>
-            <TextInput
-              placeholder="Search tasks, goals..."
-              placeholderTextColor={colors.ink.placeholder}
-              className="h-9 w-64 rounded-md border border-surface-border bg-surface-page pl-9 pr-4 text-sm text-ink"
-            />
-          </View>
+        {isMobile ? (
+          <Button
+            variant="secondary"
+            size="icon"
+            accessibilityLabel="Connections"
+            hitSlop={HIT_SLOP}
+            leftIcon={<Link size={18} color={iconColor.subtle} />}
+            onPress={goConnections}
+          />
         ) : (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Search"
-            className="h-9 w-9 items-center justify-center rounded-md active:bg-surface-muted"
+          <Button
+            variant="secondary"
+            size="md"
+            leftIcon={<Link size={16} color={iconColor.subtle} />}
+            onPress={goConnections}
           >
-            <Search size={20} color={iconColor.subtle} />
-          </Pressable>
+            Connections
+          </Button>
         )}
 
-        <Pressable
+        <Button
+          variant="ghost"
+          size="icon"
+          accessibilityLabel="Notifications"
+          hitSlop={HIT_SLOP}
           onPress={() => router.push(ROUTES.notifications)}
-          className="relative h-9 w-9 items-center justify-center rounded-md active:bg-surface-muted"
         >
-          <Bell size={20} color={iconColor.subtle} />
-          {hasUnread && (
-            <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger" />
-          )}
-        </Pressable>
+          <View className="relative">
+            <Bell size={20} color={iconColor.subtle} />
+            {hasUnread && (
+              <View className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-danger" />
+            )}
+          </View>
+        </Button>
 
-        <View className="h-6 w-px bg-surface-border" />
+        {!isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            accessibilityLabel="Help"
+            hitSlop={HIT_SLOP}
+            // TODO: help
+            onPress={() => {}}
+            leftIcon={<HelpCircle size={20} color={iconColor.subtle} />}
+          />
+        )}
+
+        {!isMobile && <View className="h-6 w-px bg-surface-border" />}
 
         <Pressable
           onPress={() => router.push(ROUTES.profile)}
+          accessibilityRole="button"
+          accessibilityLabel="Open profile"
           className="flex-row items-center gap-3 active:opacity-80"
         >
-          {isWide && (
+          {!isMobile && (
             <View className="items-end">
-              <Text className="text-sm font-medium text-ink">
+              <Text className="text-sm font-semibold text-ink">
                 {MOCK_USER.name}
               </Text>
               <Text className="text-xs text-ink-subtle">{MOCK_USER.role}</Text>
             </View>
           )}
-          <Avatar fallback="AM" src={MOCK_USER.avatar} />
+          <Avatar fallback={initials} src={MOCK_USER.avatar} />
         </Pressable>
       </View>
     </View>

@@ -30,6 +30,7 @@ import { FadeIn } from '../src/components/ui/FadeIn';
 import { Grid } from '../src/components/ui/Grid';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../src/lib/theme';
 import { ROUTES } from '../src/constants/routes';
+import { BRAND } from '../src/constants/brand';
 
 const FEATURES = [
   {
@@ -111,7 +112,7 @@ const COMMAND_CENTER = [
 const TESTIMONIALS = [
   {
     quote:
-      "Agent.ai has completely transformed our workflow. It's like having a senior social media manager working 24/7.",
+      `${BRAND.name} has completely transformed our workflow. It's like having a senior social media manager working 24/7.`,
     author: 'Sarah Jenkins',
     role: 'CMO at TechFlow',
     avatar:
@@ -127,7 +128,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "We've seen a 3x increase in engagement since switching to Agent.ai. The predictive analytics are a game changer.",
+      `We've seen a 3x increase in engagement since switching to ${BRAND.name}. The predictive analytics are a game changer.`,
     author: 'Jessica Williams',
     role: 'Social Lead at CreativeCo',
     avatar:
@@ -158,7 +159,7 @@ export default function LandingScreen() {
                 <Bot size={20} color={palette.white} />
               </View>
               <Text className="text-xl font-bold tracking-tight text-ink">
-                Agent.ai
+                {BRAND.name}
               </Text>
             </View>
             <View className="flex-row items-center gap-3">
@@ -175,8 +176,8 @@ export default function LandingScreen() {
           <View className="mx-auto w-full max-w-4xl items-center">
             <FadeIn className="mb-6">
               <Badge
-                variant="secondary"
-                className="border-primary-100/60 bg-primary-50 px-4 py-1.5"
+                variant="primary"
+                className="border-primary-100/60 px-4 py-1.5"
               >
                 <View className="flex-row items-center gap-2">
                   <Sparkles size={14} color={colors.ink.DEFAULT} />
@@ -196,7 +197,7 @@ export default function LandingScreen() {
 
             <FadeIn delay={200}>
               <Text className="mb-10 text-center text-lg leading-relaxed text-ink-muted md:text-xl">
-                Stop spending hours on content. Agent.ai learns your brand
+                Stop spending hours on content. {BRAND.name} learns your brand
                 voice, drafts posts, schedules content, and analyzes performance
                 — automatically.
               </Text>
@@ -215,9 +216,9 @@ export default function LandingScreen() {
                   Start Free Trial
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="lg"
-                  className="w-full rounded-full border-surface-border sm:w-auto"
+                  className="w-full rounded-full sm:w-auto"
                   leftIcon={<Play size={20} color={iconColor.primary} />}
                   onPress={watchDemo}
                 >
@@ -267,7 +268,7 @@ export default function LandingScreen() {
               Superpowers for your social strategy
             </Text>
             <Text className="text-center text-lg text-ink-muted">
-              Agent.ai isn&apos;t just a scheduling tool. It&apos;s an
+              {BRAND.name} isn&apos;t just a scheduling tool. It&apos;s an
               intelligent partner that understands your goals and executes them
               with precision.
             </Text>
@@ -275,7 +276,11 @@ export default function LandingScreen() {
 
           <Grid columns={3} gutter={32}>
             {FEATURES.map(({ Icon, color, title, description }) => (
-              <Card key={title} className="border-none bg-surface-page shadow-none">
+              <Card
+                key={title}
+                padding="none"
+                className="border-none bg-surface-page shadow-none"
+              >
                 <CardContent className="p-8">
                   <View className="mb-6 h-14 w-14 items-center justify-center rounded-xl bg-white shadow-sm">
                     <Icon size={28} color={color} />
@@ -365,13 +370,17 @@ export default function LandingScreen() {
               Loved by marketing teams
             </Text>
             <Text className="text-center text-ink-muted">
-              Join 10,000+ marketers who trust Agent.ai
+              Join 10,000+ marketers who trust {BRAND.name}
             </Text>
           </View>
 
           <Grid columns={3} gutter={32}>
             {TESTIMONIALS.map((testimonial) => (
-              <Card key={testimonial.author} className="border border-surface-muted">
+              <Card
+                key={testimonial.author}
+                padding="none"
+                className="border border-surface-muted"
+              >
                 <CardContent className="p-8">
                   <View className="mb-4 flex-row gap-1">
                     {[0, 1, 2, 3, 4].map((i) => (
@@ -414,13 +423,15 @@ export default function LandingScreen() {
               Ready to automate your growth?
             </Text>
             <Text className="mb-10 text-center text-lg text-primary-100">
-              Join thousands of brands using Agent.ai to scale their social
+              Join thousands of brands using {BRAND.name} to scale their social
               presence without scaling their headcount.
             </Text>
             <View className="flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Button
                 size="lg"
-                className="w-full bg-white sm:w-auto"
+                variant="secondary"
+                fullWidth
+                className="sm:w-auto"
                 textClassName="text-primary-600"
                 onPress={enterApp}
               >
@@ -450,7 +461,7 @@ export default function LandingScreen() {
                   <Bot size={20} color={palette.white} />
                 </View>
                 <Text className="text-xl font-bold tracking-tight text-ink">
-                  Agent.ai
+                  {BRAND.name}
                 </Text>
               </View>
               <Text className="mb-6 max-w-xs text-sm text-ink-subtle">
@@ -493,7 +504,7 @@ export default function LandingScreen() {
 
           <View className="flex-col items-center justify-between gap-4 border-t border-surface-muted pt-8 md:flex-row">
             <Text className="text-sm text-ink-subtle">
-              © 2026 Agent.ai Inc. All rights reserved.
+              © 2026 {BRAND.name} Inc. All rights reserved.
             </Text>
             <View className="flex-row items-center gap-2">
               <View className="h-2 w-2 rounded-full bg-success" />

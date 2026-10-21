@@ -31,6 +31,7 @@ import { FadeIn } from '../../src/components/ui/FadeIn';
 import { Gradient } from '../../src/components/ui/Gradient';
 import { Grid } from '../../src/components/ui/Grid';
 import { Input } from '../../src/components/ui/Input';
+import { Tabs } from '../../src/components/ui/Tabs';
 import { Textarea } from '../../src/components/ui/Textarea';
 import { Screen } from '../../src/components/layout/Screen';
 import { cn } from '../../src/lib/utils';
@@ -162,7 +163,7 @@ export default function UserProfileScreen() {
     >
       {/* Profile header */}
       <FadeIn>
-        <Card className="overflow-hidden">
+        <Card padding="none" className="overflow-hidden">
           <Gradient
             colors={[
               colors.primary[400],
@@ -194,7 +195,7 @@ export default function UserProfileScreen() {
                   <Text className="text-2xl font-bold text-ink">
                     {MOCK_USER.name}
                   </Text>
-                  <Badge>Pro</Badge>
+                  <Badge variant="primary">Pro</Badge>
                 </View>
                 <View className="flex-row flex-wrap items-center gap-4">
                   <View className="flex-row items-center gap-1">
@@ -231,32 +232,11 @@ export default function UserProfileScreen() {
       </FadeIn>
 
       {/* Tabs */}
-      <View className="flex-row flex-wrap gap-2">
-        {TABS.map((tab) => {
-          const isActive = tab.id === activeTab;
-          return (
-            <Pressable
-              key={tab.id}
-              onPress={() => setActiveTab(tab.id)}
-              className={cn(
-                'rounded-full px-4 py-2',
-                isActive
-                  ? 'bg-sidebar'
-                  : 'border border-surface-border bg-white active:bg-surface-muted'
-              )}
-            >
-              <Text
-                className={cn(
-                  'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-ink-muted'
-                )}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <Tabs
+        items={TABS.map((tab) => ({ key: tab.id, label: tab.label }))}
+        value={activeTab}
+        onChange={(key) => setActiveTab(key as ProfileTab)}
+      />
 
       {activeTab === 'general' && (
         <View className="flex-col gap-6 lg:flex-row">
@@ -302,7 +282,6 @@ export default function UserProfileScreen() {
                   label="Bio"
                   defaultValue="Growth Lead at Acme Corp. Passionate about leveraging AI to scale social media presence. Building the future of automated marketing."
                   editable={isEditing}
-                  className="min-h-[80px]"
                 />
                 <Input
                   label="Website"
@@ -346,10 +325,10 @@ export default function UserProfileScreen() {
             </Card>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="px-6 pt-6 pb-5">
                 <CardTitle className="text-base">Recent Activity</CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent>
                 {activityLog.slice(0, 5).map((item, i) => (
                   <View
                     key={i}
@@ -376,8 +355,8 @@ export default function UserProfileScreen() {
             const Icon = platform.Icon;
             return (
               <FadeIn key={platform.name} delay={i * 80}>
-                <Card>
-                  <CardContent className="p-5">
+                <Card padding="sm">
+                  <CardContent>
                     <View className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <View className="flex-row items-center gap-4">
                         <View
@@ -410,7 +389,7 @@ export default function UserProfileScreen() {
                         >
                           View
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="secondary" size="sm">
                           Disconnect
                         </Button>
                       </View>
@@ -529,7 +508,7 @@ export default function UserProfileScreen() {
                     </Text>
                   </View>
                 </View>
-                <Button variant="outline" size="sm">
+                <Button variant="secondary" size="sm">
                   Manage
                 </Button>
               </View>
@@ -537,10 +516,10 @@ export default function UserProfileScreen() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="px-6 pt-6 pb-5">
               <CardTitle className="text-base">Active Sessions</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent>
               {sessions.map((session, i) => (
                 <View
                   key={i}

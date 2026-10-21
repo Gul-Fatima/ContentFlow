@@ -13,25 +13,21 @@ export interface InputProps extends TextInputProps {
 export const Input = forwardRef<TextInput, InputProps>(
   ({ className, containerClassName, label, error, ...props }, ref) => {
     return (
-      <View className={cn('w-full', containerClassName)}>
+      <View className={cn('w-full gap-1.5', containerClassName)}>
         {label ? (
-          <Text className="mb-2 text-sm font-medium text-ink-muted">
-            {label}
-          </Text>
+          <Text className="text-sm font-medium text-ink-muted">{label}</Text>
         ) : null}
         <TextInput
           ref={ref}
           placeholderTextColor={colors.ink.placeholder}
           className={cn(
-            'h-10 w-full rounded-control border border-surface-border bg-white px-3 text-sm text-ink',
+            'h-10 w-full rounded-control border border-surface-border bg-white px-3 text-sm text-ink focus:border-primary-500',
             error && 'border-danger',
             className
           )}
           {...props}
         />
-        {error ? (
-          <Text className="mt-1 text-xs text-danger">{error}</Text>
-        ) : null}
+        {error ? <Text className="text-xs text-danger-text">{error}</Text> : null}
       </View>
     );
   }

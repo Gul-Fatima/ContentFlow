@@ -1,9 +1,9 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from './Header';
 
 interface ScreenProps {
+  /** Kept for call sites; the app shell now titles every page "Hi {name}!". */
   title: string;
   children: React.ReactNode;
   scroll?: boolean;
@@ -15,16 +15,13 @@ interface ScreenProps {
  * Every route under `app/(app)` renders through this so headers stay consistent.
  */
 export function Screen({
-  title,
   children,
   scroll = true,
   contentClassName,
 }: ScreenProps) {
-  const insets = useSafeAreaInsets();
-
   return (
-    <View className="flex-1 bg-surface-page" style={{ paddingTop: insets.top }}>
-      <Header title={title} />
+    <View className="flex-1 bg-surface-page">
+      <Header />
       {scroll ? (
         <ScrollView
           className="flex-1"

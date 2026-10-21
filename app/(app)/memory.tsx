@@ -12,9 +12,10 @@ import {
 } from '../../src/components/ui/Card';
 import { Badge } from '../../src/components/ui/Badge';
 import { Grid } from '../../src/components/ui/Grid';
+import { PageHeader } from '../../src/components/ui/PageHeader';
+import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
 import { Textarea } from '../../src/components/ui/Textarea';
-import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette } from '../../src/lib/theme';
 
 type MemoryTab = 'voice' | 'rules' | 'personas' | 'competitors';
@@ -66,48 +67,22 @@ export default function BrandMemoryScreen() {
       title="Brand Memory"
       contentClassName="gap-6 p-4 pb-16 md:p-8 md:max-w-5xl"
     >
-      <View className="flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <View>
-          <Text className="text-2xl font-bold text-ink md:text-3xl">
-            Brand Memory
-          </Text>
-          <Text className="text-ink-subtle">
-            Configure how the AI represents your brand across channels.
-          </Text>
-        </View>
-        <Button leftIcon={<Save size={16} color={palette.white} />}>
-          Save Changes
-        </Button>
-      </View>
+      <PageHeader
+        title="Brand Memory"
+        description="Configure how the AI represents your brand across channels."
+        actions={
+          <Button leftIcon={<Save size={16} color={palette.white} />}>
+            Save Changes
+          </Button>
+        }
+      />
 
-      {/* Tabs — the shared Tabs primitive gets cramped with 4 long labels,
-          so this page uses a horizontally scrollable pill row. */}
-      <View className="flex-row flex-wrap gap-2">
-        {TABS.map((tab) => {
-          const isActive = tab.id === activeTab;
-          return (
-            <Pressable
-              key={tab.id}
-              onPress={() => setActiveTab(tab.id)}
-              className={cn(
-                'rounded-full px-4 py-2',
-                isActive
-                  ? 'bg-sidebar'
-                  : 'border border-surface-border bg-white active:bg-surface-muted'
-              )}
-            >
-              <Text
-                className={cn(
-                  'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-ink-muted'
-                )}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {/* Tabs — horizontally scrollable, so 4 long labels never overflow. */}
+      <Tabs
+        items={TABS.map((tab) => ({ key: tab.id, label: tab.label }))}
+        value={activeTab}
+        onChange={(key) => setActiveTab(key as MemoryTab)}
+      />
 
       {activeTab === 'voice' && (
         <View className="gap-8">
@@ -197,7 +172,7 @@ export default function BrandMemoryScreen() {
                   </Text>
                   <View className="flex-row flex-wrap gap-2">
                     {NEGATIVE_WORDS.map((word) => (
-                      <Badge key={word} variant="error" className="px-3 py-1">
+                      <Badge key={word} variant="danger" className="px-3 py-1">
                         {word}
                       </Badge>
                     ))}
@@ -234,15 +209,16 @@ export default function BrandMemoryScreen() {
                   className="flex-row items-center justify-between rounded-lg border border-surface-muted bg-surface-page p-3"
                 >
                   <Text className="flex-1 pr-3 text-ink-muted">{rule}</Text>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="icon">
                     <Trash2 size={16} color={iconColor.muted} />
                   </Button>
                 </View>
               ))}
             </View>
             <Button
-              variant="outline"
-              className="mt-4 w-full border-dashed"
+              variant="secondary"
+              fullWidth
+              className="mt-4 border-dashed"
               leftIcon={<Plus size={16} color={iconColor.subtle} />}
             >
               Add New Rule
@@ -262,7 +238,7 @@ export default function BrandMemoryScreen() {
                     <Users size={20} color={iconColor.muted} />
                     <CardTitle>{persona.name}</CardTitle>
                   </View>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="icon">
                     <Edit3 size={16} color={iconColor.muted} />
                   </Button>
                 </View>
@@ -314,8 +290,9 @@ export default function BrandMemoryScreen() {
               tone.
             </Text>
             <Button
-              variant="outline"
-              className="mt-4 w-full border-dashed"
+              variant="secondary"
+              fullWidth
+              className="mt-4 border-dashed"
               leftIcon={<Plus size={16} color={iconColor.subtle} />}
             >
               Add Competitor
