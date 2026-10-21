@@ -2,19 +2,33 @@ import '../global.css';
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Logo } from '../src/components/brand/Logo';
 import { AuthProvider, useAuth } from '../src/providers/AuthProvider';
 
 /**
- * Route guards. While the session is being restored nothing is authenticated,
- * so `/` (the unprotected gate) renders the branded splash frame.
- *  - authenticated  : (app) + onboarding
- *  - logged out     : (auth) + welcome (+ password reset)
- *  - always         : index, landing, demo
+ * Route guards.  - authenticated : (app) + onboarding
+ *                - logged out    : (auth) + welcome (+ password reset)
+ *                - always        : index, landing, demo
+ *
+ * While the session is restored (`status === 'loading'`) the navigator is not
+ * mounted at all: mounting it with every guard closed would reject the current
+ * URL and drop deep links such as /approval back to the anchor route.
  */
 function RootNavigator() {
   const { status } = useAuth();
+
+  if (status === 'loading') {
+    // Branded splash frame; the animated version lands in task B2.
+    return (
+      <View className="flex-1 items-center justify-center bg-sidebar">
+        <Logo variant="onDark" />
+      </View>
+    );
+  }
+
   const isAuthenticated = status === 'authenticated';
 
   return (
