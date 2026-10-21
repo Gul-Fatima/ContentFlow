@@ -1,5 +1,5 @@
 import { Image, Text, View } from 'react-native';
-import { Bot } from 'lucide-react-native';
+import { Megaphone } from 'lucide-react-native';
 import { BRAND, WORDMARK_IMAGE } from '../../constants/brand';
 import { cn } from '../../lib/utils';
 
@@ -14,7 +14,7 @@ const tileSizes = { sm: 'h-8 w-8', md: 'h-10 w-10' } as const;
 const iconSizes = { sm: 18, md: 22 } as const;
 const wordmarkHeights = { sm: 20, md: 24 } as const;
 
-/** Brand tile (40x40, or 32x32 when `sm`) plus the ContentEngine wordmark. */
+/** Brand tile (40x40, or 32x32 when `sm`) plus the IBDA wordmark. */
 export function Logo({ variant, iconOnly, size = 'md' }: LogoProps) {
   return (
     <View className="flex-row items-center gap-2">
@@ -24,7 +24,7 @@ export function Logo({ variant, iconOnly, size = 'md' }: LogoProps) {
           tileSizes[size]
         )}
       >
-        <Bot size={iconSizes[size]} color="#FFFFFF" />
+        <Megaphone size={iconSizes[size]} color="#FFFFFF" />
       </View>
       {!iconOnly &&
         (WORDMARK_IMAGE ? (
@@ -36,7 +36,7 @@ export function Logo({ variant, iconOnly, size = 'md' }: LogoProps) {
         ) : (
           <Text
             className={cn(
-              'text-lg font-bold',
+              'text-lg font-bold tracking-wide',
               variant === 'onDark' ? 'text-white' : 'text-ink'
             )}
           >

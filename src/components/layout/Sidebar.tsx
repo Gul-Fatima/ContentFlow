@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -7,14 +8,9 @@ import {
 } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import {
-  BarChart3,
-  Brain,
-  CalendarClock,
-  CheckSquare,
   ChevronLeft,
   ChevronRight,
   Crown,
-  LayoutGrid,
   LogOut,
   Sparkles,
 } from 'lucide-react-native';
@@ -22,29 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Logo } from '../brand/Logo';
 import { Button } from '../ui/Button';
 import { BRAND } from '../../constants/brand';
+import { NAV_ITEMS } from '../../constants/nav';
 import { ROUTES, type AppRoute } from '../../constants/routes';
 import { useSidebar } from '../../context/SidebarContext';
+import { useAuth } from '../../providers/AuthProvider';
 import { colors } from '../../lib/theme';
 import { cn } from '../../lib/utils';
-
-const navItems = [
-  { route: ROUTES.dashboard, label: 'Dashboard', icon: LayoutGrid },
-  { route: ROUTES.memory, label: 'Brand Memory', icon: Brain },
-  {
-    route: ROUTES.approval,
-    label: 'Approval Inbox',
-    icon: CheckSquare,
-    badge: 5,
-  },
-  {
-    route: ROUTES.scheduler,
-    label: 'Scheduler',
-    icon: CalendarClock,
-    badge: 10,
-  },
-
-  { route: ROUTES.analytics, label: 'Analytics', icon: BarChart3 },
-] as const;
 
 const ACTIVE_ICON = colors.primary[300];
 const INACTIVE_ICON = colors.ink.faint;
@@ -58,6 +37,7 @@ const ACTIVE_BAR = colors.primary[500];
  */
 export interface SidebarProps {
   navigation: { closeDrawer: () => void };
+  /** Desktop user preference; ignored below 1024 where the rail is forced. */
   collapsed: boolean;
 }
 
@@ -67,26 +47,32 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { toggle } = useSidebar();
+  const { signOut } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  const isMobile = width < 768;
-  const isCollapsed = collapsed && !isMobile;
+  // 768–1023 is always the collapsed icon rail; the toggle is desktop-only.
+  const isDesktop = width >= 1024;
+  const isCollapsed = isDesktop ? collapsed : width >= 768;
 
   const go = (route: AppRoute) => {
     router.navigate(route);
     navigation.closeDrawer();
   };
 
-  const logout = () => {
-    // TODO: clear auth token when backend auth exists.
-    navigation.closeDrawer();
-    router.replace(ROUTES.signIn);
+  const logout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+    } finally {
+      navigation.closeDrawer();
+      router.replace(ROUTES.welcome);
+      setLoggingOut(false);
+    }
   };
 
   return (
-    <View
-      className="flex-1 bg-ink"
-      style={{ paddingTop: insets.top }}
-    >
+    <View className="flex-1 bg-sidebar" style={{ paddingTop: insets.top }}>
       {isCollapsed ? (
         <View
           className="items-center justify-center border-b border-white/10"
@@ -113,10 +99,9 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
         </View>
 
         <View className={cn(isCollapsed ? 'items-center px-2' : 'px-3')}>
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.route;
             const Icon = item.icon;
-            const badge = 'badge' in item ? item.badge : undefined;
 
             if (isCollapsed) {
               return (
@@ -141,10 +126,10 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                       size={20}
                       color={isActive ? ACTIVE_ICON : INACTIVE_ICON}
                     />
-                    {badge ? (
+                    {item.badge ? (
                       <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary-600 px-1">
                         <Text className="text-caption font-semibold text-white">
-                          {badge}
+                          {item.badge}
                         </Text>
                       </View>
                     ) : null}
@@ -159,6 +144,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                 onPress={() => go(item.route)}
                 accessibilityRole="button"
                 accessibilityLabel={item.label}
+                accessibilityState={{ selected: isActive }}
                 className={cn(
                   'relative mb-1 h-11 w-full flex-row items-center gap-3 rounded-lg px-3',
                   !isActive && 'active:bg-sidebar-card'
@@ -184,10 +170,10 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
                 >
                   {item.label}
                 </Text>
-                {badge ? (
+                {item.badge ? (
                   <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-primary-600 px-1.5">
                     <Text className="text-caption font-semibold text-white">
-                      {badge}
+                      {item.badge}
                     </Text>
                   </View>
                 ) : null}
@@ -212,7 +198,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             <View className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-ink bg-success" />
           </Pressable>
 
-          {!isMobile && (
+          {isDesktop && (
             <Pressable
               onPress={toggle}
               accessibilityRole="button"
@@ -228,6 +214,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             size="icon"
             className="mt-3 h-12 w-12"
             accessibilityLabel="Logout"
+            loading={loggingOut}
             leftIcon={<LogOut size={18} color={colors.surface.card} />}
             onPress={logout}
           />
@@ -295,7 +282,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             </Text>
           </View>
 
-          {!isMobile && (
+          {isDesktop && (
             <Pressable
               onPress={toggle}
               accessibilityRole="button"
@@ -310,6 +297,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
             variant="primary"
             fullWidth
             className="mt-3 h-11"
+            loading={loggingOut}
             leftIcon={<LogOut size={16} color={colors.surface.card} />}
             onPress={logout}
           >

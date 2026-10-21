@@ -13,6 +13,10 @@ dist
 dist-ssr
 *.local
 
+# Local environment (never commit real values; see .env.example)
+.env
+.env.local
+
 # Python / Django
 backend/.venv
 backend/venv

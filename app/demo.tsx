@@ -5,10 +5,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowRight,
   BarChart3,
-  Bot,
   BrainCircuit,
   CalendarClock,
   CheckCircle2,
+  Megaphone,
   Play,
 } from 'lucide-react-native';
 import { Badge } from '../src/components/ui/Badge';
@@ -69,7 +69,7 @@ export default function WatchDemoScreen() {
               className="flex-row items-center gap-2 active:opacity-70"
             >
               <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-                <Bot size={20} color={palette.white} />
+                <Megaphone size={20} color={palette.white} />
               </View>
               <Text className="text-xl font-bold tracking-tight text-ink">
                 {BRAND.name}
@@ -260,7 +260,7 @@ export default function WatchDemoScreen() {
           <View className="flex-col items-center justify-between gap-6 md:flex-row">
             <View className="flex-row items-center gap-2">
               <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-                <Bot size={20} color={palette.white} />
+                <Megaphone size={20} color={palette.white} />
               </View>
               <Text className="text-xl font-bold tracking-tight text-ink">
                 {BRAND.name}

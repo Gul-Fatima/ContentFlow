@@ -5,19 +5,21 @@ import { cn } from '../../lib/utils';
 interface AvatarProps {
   src?: string;
   fallback: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
   /** Hide the online dot (e.g. in dense lists). */
   showStatus?: boolean;
 }
 
 const sizes = {
+  xs: 'h-9 w-9', // 36px — mobile header
   sm: 'h-8 w-8',
   md: 'h-10 w-10',
   lg: 'h-12 w-12',
 };
 
 const textSizes = {
+  xs: 'text-sm',
   sm: 'text-xs',
   md: 'text-sm',
   lg: 'text-base',
@@ -47,14 +49,20 @@ export function Avatar({
           />
         ) : (
           <View className="h-full w-full items-center justify-center bg-primary-100">
-            <Text className={cn('font-medium text-primary-700', textSizes[size])}>
+            <Text
+              className={cn(
+                'font-semibold text-primary-700',
+                textSizes[size]
+              )}
+            >
               {fallback}
             </Text>
           </View>
         )}
       </View>
+      {/* Online dot: 10px success fill inside a 2px white ring (14px box). */}
       {showStatus && (
-        <View className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-pill border-2 border-white bg-success" />
+        <View className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-pill border-2 border-white bg-success" />
       )}
     </View>
   );

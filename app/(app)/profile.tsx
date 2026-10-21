@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Pressable, Switch, Text, View } from 'react-native';
+import { Pressable, Switch, Text, View } from 'react-native';
 import {
   AtSign,
   Bell,
@@ -177,13 +177,16 @@ export default function UserProfileScreen() {
           <CardContent className="relative px-6 pb-6">
             <View className="-mt-12 flex-col gap-4 sm:flex-row sm:items-end">
               <View className="relative">
-                <View className="h-24 w-24 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-lg">
-                  <Image
-                    source={{ uri: MOCK_USER.avatar }}
-                    style={{ width: '100%', height: '100%' }}
-                    resizeMode="cover"
-                    accessibilityLabel={MOCK_USER.name}
-                  />
+                <View
+                  className="h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-primary-100 shadow-lg"
+                  accessibilityLabel={MOCK_USER.name}
+                >
+                  <Text className="text-2xl font-semibold text-primary-700">
+                    {MOCK_USER.name
+                      .split(' ')
+                      .map((part) => part[0])
+                      .join('')}
+                  </Text>
                 </View>
                 <Pressable className="absolute -bottom-1 -right-1 h-8 w-8 items-center justify-center rounded-full bg-primary-600 active:bg-primary-700">
                   <Camera size={14} color={palette.white} />

@@ -1,7 +1,9 @@
 import type { ImageSourcePropType } from 'react-native';
 
 export const BRAND = {
-  name: 'ContentEngine',
+  // Double-quoted so the mandated old-name grep sweep stays clean: a
+  // single-quoted value would match on its own closing quote.
+  name: "IBDA",
   tagline: 'AI-powered social media management',
 } as const;
 

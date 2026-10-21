@@ -1,5 +1,10 @@
 export const ROUTES = {
+  /** Entry gate: resolves to /dashboard or /welcome based on the session. */
   home: '/',
+  landing: '/landing',
+  welcome: '/welcome',
+  onboarding: '/onboarding',
+  forgotPassword: '/forgot-password',
   demo: '/demo',
   signIn: '/sign-in',
   signUp: '/sign-up',

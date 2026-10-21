@@ -5,7 +5,6 @@ import {
   AtSign,
   ArrowRight,
   BarChart3,
-  Bot,
   Box,
   BrainCircuit,
   Briefcase,
@@ -15,6 +14,7 @@ import {
   Circle,
   Hexagon,
   Mail,
+  Megaphone,
   Play,
   Shield,
   Sparkles,
@@ -145,7 +145,8 @@ const FOOTER_COLUMNS = [
 export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const enterApp = () => router.push(ROUTES.signIn);
+  const goSignIn = () => router.push(ROUTES.signIn);
+  const goSignUp = () => router.push(ROUTES.signUp);
   const watchDemo = () => router.push(ROUTES.demo);
 
   return (
@@ -156,17 +157,17 @@ export default function LandingScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-                <Bot size={20} color={palette.white} />
+                <Megaphone size={20} color={palette.white} />
               </View>
               <Text className="text-xl font-bold tracking-tight text-ink">
                 {BRAND.name}
               </Text>
             </View>
             <View className="flex-row items-center gap-3">
-              <Button variant="ghost" onPress={enterApp}>
+              <Button variant="ghost" onPress={goSignIn}>
                 Sign in
               </Button>
-              <Button onPress={enterApp}>Get Started</Button>
+              <Button onPress={goSignUp}>Get Started</Button>
             </View>
           </View>
         </View>
@@ -211,7 +212,7 @@ export default function LandingScreen() {
                   rightIcon={
                     <ArrowRight size={20} color={palette.white} />
                   }
-                  onPress={enterApp}
+                  onPress={goSignUp}
                 >
                   Start Free Trial
                 </Button>
@@ -329,7 +330,7 @@ export default function LandingScreen() {
               </View>
 
               <View className="mt-10">
-                <Button size="lg" onPress={enterApp}>
+                <Button size="lg" onPress={goSignIn}>
                   Explore the Dashboard
                 </Button>
               </View>
@@ -433,7 +434,7 @@ export default function LandingScreen() {
                 fullWidth
                 className="sm:w-auto"
                 textClassName="text-primary-600"
-                onPress={enterApp}
+                onPress={goSignUp}
               >
                 Get Started for Free
               </Button>
@@ -458,7 +459,7 @@ export default function LandingScreen() {
             <View className="mb-8">
               <View className="mb-4 flex-row items-center gap-2">
                 <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-                  <Bot size={20} color={palette.white} />
+                  <Megaphone size={20} color={palette.white} />
                 </View>
                 <Text className="text-xl font-bold tracking-tight text-ink">
                   {BRAND.name}
