@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import {
+  Image,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import {
   AtSign,
   Briefcase,
@@ -13,6 +20,7 @@ import {
   Mail,
   MessageSquare,
   RefreshCw,
+  Search,
   Sparkles,
   X,
 } from 'lucide-react-native';
@@ -23,60 +31,17 @@ import { FadeIn } from '../../src/components/ui/FadeIn';
 import { PageHeader } from '../../src/components/ui/PageHeader';
 import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
+import { EmptyState } from '../../src/components/ui/EmptyState';
+import { ErrorState, Skeleton } from '../../src/components/ui/Skeleton';
+import { ResultCount } from '../../src/components/ui/ResultCount';
+import { SearchBar } from '../../src/components/ui/SearchBar';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
-import type { ContentItem } from '../../src/types';
-
-// Mock data — replaced by `GET /api/content/` once the API is wired up.
-const initialContent: ContentItem[] = [
-  {
-    id: '1',
-    platform: 'twitter',
-    content:
-      "🚀 AI is changing how we work, but it's not replacing creativity. It's amplifying it. Here are 3 ways to use AI as your creative partner, not your replacement. 🧵👇 #AI #Creativity #FutureOfWork",
-    reasoning:
-      'Aligns with "Thought Leadership" goal. Uses trending hashtags and thread format for higher engagement.',
-    scheduledTime: 'Tomorrow, 9:00 AM',
-    status: 'pending',
-    author: 'Agent',
-  },
-  {
-    id: '2',
-    platform: 'linkedin',
-    content:
-      'Excited to announce our new integration with Slack! Now you can manage your social approvals directly from your team channels. \n\nProductivity just got a major upgrade. 📈\n\nCheck out the link in comments to learn more.',
-    image:
-      'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-    reasoning:
-      'Product launch announcement. Professional tone matched to LinkedIn audience.',
-    scheduledTime: 'Wed, 2:00 PM',
-    status: 'pending',
-    author: 'Agent',
-  },
-  {
-    id: '3',
-    platform: 'instagram',
-    content:
-      'Behind the scenes at our annual retreat! 🌲✨ \n\nBuilding the future of social media management takes a village (and some fresh air). \n\n#CompanyCulture #Startuplife #TeamBuilding',
-    image:
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-    reasoning:
-      'Humanizing the brand. Visual content performs best on Instagram.',
-    scheduledTime: 'Fri, 5:00 PM',
-    status: 'pending',
-    author: 'Agent',
-  },
-  {
-    id: '4',
-    platform: 'email',
-    content:
-      "Subject: Your Weekly Social Performance Report 📊\n\nHi Team,\n\nHere are the key highlights from last week's social media performance:\n\n- Total Reach: +15%\n- Engagement Rate: 4.2%\n- Top Post: \"5 Tips for Better Copywriting\"\n\nRead the full report in your dashboard.",
-    reasoning: 'Weekly stakeholder update email. Concise and data-driven.',
-    scheduledTime: 'Mon, 8:00 AM',
-    status: 'pending',
-    author: 'Agent',
-  },
-];
+import { useAsync } from '../../src/hooks/useAsync';
+import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
+import { filterBySearch, normalize } from '../../src/lib/search';
+import { listApprovals } from '../../src/services/content/contentService';
+import type { Approval } from '../../src/types/content';
 
 const FILTERS = [
   { id: 'all', label: 'All Pending' },
@@ -103,17 +68,23 @@ function PlatformIcon({ platform }: { platform: string }) {
 }
 
 export default function ApprovalInboxScreen() {
+  const { width } = useWindowDimensions();
+  const { data, loading, error, reload } = useAsync(listApprovals, []);
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [items, setItems] = useState(initialContent);
+  const [items, setItems] = useState<Approval[] | null>(null);
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query);
   const [expandedReasoning, setExpandedReasoning] = useState<string | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState<string | null>(null);
   const [scheduleValues, setScheduleValues] = useState<
     Record<string, { date: string; time: string }>
   >({});
+  const allItems = items ?? data ?? [];
+  const isWide = width >= 768;
 
   const handleAction = (id: string, action: 'approve' | 'reject') => {
     setItems((prev) =>
-      prev.map((item) =>
+      (prev ?? data ?? []).map((item) =>
         item.id === id
           ? { ...item, status: action === 'approve' ? 'approved' : 'rejected' }
           : item
@@ -132,13 +103,17 @@ export default function ApprovalInboxScreen() {
     });
   };
 
-  const pendingCount = items.filter((i) => i.status === 'pending').length;
-  const filteredItems =
+  const pendingItems = allItems.filter((item) => item.status === 'pending');
+  const pendingCount = pendingItems.length;
+  const tabItems =
     activeTab === 'all'
-      ? items.filter((i) => i.status === 'pending')
-      : items.filter(
-          (i) => i.platform === activeTab && i.status === 'pending'
-        );
+      ? pendingItems
+      : pendingItems.filter((item) => item.platform === activeTab);
+  const filteredItems = filterBySearch(
+    tabItems,
+    debouncedQuery,
+    (item) => [item.title, item.body, item.platform, item.scheduledLabel]
+  );
 
   return (
     <Screen
@@ -161,19 +136,66 @@ export default function ApprovalInboxScreen() {
         }
       />
 
-      {/* Platform filters */}
-      <Tabs
-        items={FILTERS.map((filter) => ({
-          key: filter.id,
-          label: filter.label,
-          count: filter.id === 'all' ? pendingCount : undefined,
-        }))}
-        value={activeTab}
-        onChange={setActiveTab}
+      <View
+        className={
+          isWide
+            ? 'flex-row items-center justify-between gap-4'
+            : 'gap-3'
+        }
+      >
+        {!isWide ? (
+          <SearchBar
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search approvals..."
+          />
+        ) : null}
+        <Tabs
+          items={FILTERS.map((filter) => ({
+            key: filter.id,
+            label: filter.label,
+            count:
+              filter.id === 'all'
+                ? pendingCount
+                : pendingItems.filter((item) => item.platform === filter.id)
+                    .length,
+          }))}
+          value={activeTab}
+          onChange={setActiveTab}
+        />
+        {isWide ? (
+          <View className="w-[280px] shrink-0">
+            <SearchBar
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search approvals..."
+            />
+          </View>
+        ) : null}
+      </View>
+
+      <ResultCount
+        count={filteredItems.length}
+        total={tabItems.length}
+        active={normalize(query).length > 0}
       />
 
       <View className="gap-6">
-        {filteredItems.length === 0 ? (
+        {loading && allItems.length === 0 ? (
+          <View className="gap-6">
+            <Skeleton height={240} />
+            <Skeleton height={240} />
+            <Skeleton height={240} />
+          </View>
+        ) : error ? (
+          <ErrorState onRetry={reload} />
+        ) : allItems.length === 0 ? (
+          <EmptyState
+            icon={<Check size={24} color={iconColor.muted} />}
+            title="Nothing here yet"
+            description="Your approval queue is empty."
+          />
+        ) : pendingItems.length === 0 ? (
           <FadeIn>
             <View className="items-center justify-center rounded-xl border border-dashed border-surface-border bg-surface-page px-4 py-16">
               <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-surface-muted">
@@ -187,6 +209,22 @@ export default function ApprovalInboxScreen() {
               </Text>
             </View>
           </FadeIn>
+        ) : tabItems.length === 0 ? (
+          <EmptyState
+            icon={<Check size={24} color={iconColor.muted} />}
+            title="No pending items for this platform"
+            description="There are pending items in other platform filters."
+            actionLabel="View all pending"
+            onAction={() => setActiveTab('all')}
+          />
+        ) : normalize(query).length > 0 && filteredItems.length === 0 ? (
+          <EmptyState
+            icon={<Search size={24} color={iconColor.muted} />}
+            title={`No results for "${query}"`}
+            description="Try a different keyword or clear the search."
+            actionLabel="Clear search"
+            onAction={() => setQuery('')}
+          />
         ) : (
           filteredItems.map((item, index) => (
             <FadeIn key={item.id} delay={index * 60}>
@@ -206,7 +244,7 @@ export default function ApprovalInboxScreen() {
                           <View className="flex-row items-center gap-1">
                             <Calendar size={12} color={iconColor.muted} />
                             <Text className="text-xs text-ink-subtle">
-                              {item.scheduledTime}
+                              {item.scheduledLabel}
                             </Text>
                           </View>
                         </View>
@@ -216,12 +254,12 @@ export default function ApprovalInboxScreen() {
 
                     <View className="gap-4">
                       <Text className="font-medium leading-relaxed text-ink">
-                        {item.content}
+                        {item.body}
                       </Text>
-                      {item.image && (
+                      {item.imageUrl && (
                         <View className="w-full overflow-hidden rounded-lg border border-surface-border bg-surface-muted">
                           <Image
-                            source={{ uri: item.image }}
+                            source={{ uri: item.imageUrl }}
                             style={{ width: '100%', aspectRatio: 16 / 9 }}
                             resizeMode="cover"
                           />
@@ -257,7 +295,7 @@ export default function ApprovalInboxScreen() {
                               expandedReasoning === item.id ? undefined : 2
                             }
                           >
-                            {item.reasoning}
+                            {item.aiReasoning}
                           </Text>
                         </View>
                       </Pressable>

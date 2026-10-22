@@ -1,7 +1,16 @@
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { Edit3, Mic2, Plus, Save, ShieldAlert, Trash2, Users } from 'lucide-react-native';
+import {
+  Edit3,
+  Mic2,
+  Plus,
+  Save,
+  Search,
+  ShieldAlert,
+  Trash2,
+  Users,
+} from 'lucide-react-native';
 import { Button } from '../../src/components/ui/Button';
 import {
   Card,
@@ -16,7 +25,18 @@ import { PageHeader } from '../../src/components/ui/PageHeader';
 import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
 import { Textarea } from '../../src/components/ui/Textarea';
+import { EmptyState } from '../../src/components/ui/EmptyState';
+import { ErrorState, Skeleton } from '../../src/components/ui/Skeleton';
+import { ResultCount } from '../../src/components/ui/ResultCount';
+import { SearchBar } from '../../src/components/ui/SearchBar';
 import { colors, iconColor, palette } from '../../src/lib/theme';
+import { useAsync } from '../../src/hooks/useAsync';
+import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
+import { filterBySearch, normalize } from '../../src/lib/search';
+import {
+  listBrandRules,
+  listPersonas,
+} from '../../src/services/content/contentService';
 
 type MemoryTab = 'voice' | 'rules' | 'personas' | 'competitors';
 
@@ -27,26 +47,8 @@ const TABS: { id: MemoryTab; label: string }[] = [
   { id: 'competitors', label: 'Competitors' },
 ];
 
-const RULES = [
-  'Always use Oxford commas',
-  'Never mention competitors by name',
-  'Emojis should be used sparingly (max 2 per post)',
-  'Always include a Call to Action (CTA)',
-  'Dates must be in US format (MM/DD/YYYY)',
-];
-
 const POWER_WORDS = ['Growth', 'Scale', 'Automate', 'Strategy', 'ROI'];
 const NEGATIVE_WORDS = ['Cheap', 'Hack', 'Viral', 'Guaranteed'];
-
-const PERSONAS = [
-  { name: 'The Busy Founder', role: 'Startup CEO', pain: 'No time for consistency' },
-  {
-    name: 'Agency Alice',
-    role: 'Social Media Manager',
-    pain: 'Overwhelmed by client approvals',
-  },
-  { name: 'Marketing Mike', role: 'CMO', pain: 'Need to prove ROI to board' },
-];
 
 const TONE_SLIDERS = [
   { left: 'Casual', right: 'Formal', initial: 60, key: 'formal' },
@@ -55,12 +57,39 @@ const TONE_SLIDERS = [
 ];
 
 export default function BrandMemoryScreen() {
+  const { data: rulesData, loading: rulesLoading, error: rulesError, reload: reloadRules } =
+    useAsync(listBrandRules, []);
+  const {
+    data: personasData,
+    loading: personasLoading,
+    error: personasError,
+    reload: reloadPersonas,
+  } = useAsync(listPersonas, []);
+  const rules = rulesData ?? [];
+  const personas = personasData ?? [];
   const [activeTab, setActiveTab] = useState<MemoryTab>('voice');
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query);
   const [tones, setTones] = useState<Record<string, number>>({
     formal: 60,
     serious: 40,
     detailed: 30,
   });
+  const filteredRules = filterBySearch(
+    rules,
+    debouncedQuery,
+    (rule) => [rule.title]
+  );
+  const filteredPersonas = filterBySearch(
+    personas,
+    debouncedQuery,
+    (persona) => [
+      persona.name,
+      persona.role,
+      persona.pain,
+      persona.goals,
+    ]
+  );
 
   return (
     <Screen
@@ -81,8 +110,32 @@ export default function BrandMemoryScreen() {
       <Tabs
         items={TABS.map((tab) => ({ key: tab.id, label: tab.label }))}
         value={activeTab}
-        onChange={(key) => setActiveTab(key as MemoryTab)}
+        onChange={(key) => {
+          setActiveTab(key as MemoryTab);
+          setQuery('');
+        }}
       />
+
+      {activeTab === 'rules' || activeTab === 'personas' ? (
+        <View className="gap-2">
+          <SearchBar
+            value={query}
+            onChangeText={setQuery}
+            placeholder={
+              activeTab === 'rules' ? 'Search rules...' : 'Search personas...'
+            }
+          />
+          <ResultCount
+            count={
+              activeTab === 'rules'
+                ? filteredRules.length
+                : filteredPersonas.length
+            }
+            total={activeTab === 'rules' ? rules.length : personas.length}
+            active={normalize(query).length > 0}
+          />
+        </View>
+      ) : null}
 
       {activeTab === 'voice' && (
         <View className="gap-8">
@@ -202,19 +255,43 @@ export default function BrandMemoryScreen() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {rulesLoading ? (
+              <View className="gap-4">
+                <Skeleton height={48} />
+                <Skeleton height={48} />
+                <Skeleton height={48} />
+              </View>
+            ) : rulesError ? (
+              <ErrorState onRetry={reloadRules} />
+            ) : rules.length === 0 ? (
+              <EmptyState
+                icon={<ShieldAlert size={24} color={iconColor.muted} />}
+                title="Nothing here yet"
+                description="Brand content rules will appear here."
+              />
+            ) : normalize(query).length > 0 && filteredRules.length === 0 ? (
+              <EmptyState
+                icon={<Search size={24} color={iconColor.muted} />}
+                title={`No results for "${query}"`}
+                description="Try a different keyword or clear the search."
+                actionLabel="Clear search"
+                onAction={() => setQuery('')}
+              />
+            ) : (
             <View className="gap-4">
-              {RULES.map((rule, i) => (
+              {filteredRules.map((rule) => (
                 <View
-                  key={i}
+                  key={rule.id}
                   className="flex-row items-center justify-between rounded-lg border border-surface-muted bg-surface-page p-3"
                 >
-                  <Text className="flex-1 pr-3 text-ink-muted">{rule}</Text>
+                  <Text className="flex-1 pr-3 text-ink-muted">{rule.title}</Text>
                   <Button variant="ghost" size="icon">
                     <Trash2 size={16} color={iconColor.muted} />
                   </Button>
                 </View>
               ))}
             </View>
+            )}
             <Button
               variant="secondary"
               fullWidth
@@ -228,8 +305,30 @@ export default function BrandMemoryScreen() {
       )}
 
       {activeTab === 'personas' && (
+        personasLoading ? (
+          <View className="gap-4">
+            <Skeleton height={220} />
+            <Skeleton height={220} />
+          </View>
+        ) : personasError ? (
+          <ErrorState onRetry={reloadPersonas} />
+        ) : personas.length === 0 ? (
+          <EmptyState
+            icon={<Users size={24} color={iconColor.muted} />}
+            title="Nothing here yet"
+            description="Audience personas will appear here."
+          />
+        ) : normalize(query).length > 0 && filteredPersonas.length === 0 ? (
+          <EmptyState
+            icon={<Search size={24} color={iconColor.muted} />}
+            title={`No results for "${query}"`}
+            description="Try a different keyword or clear the search."
+            actionLabel="Clear search"
+            onAction={() => setQuery('')}
+          />
+        ) : (
         <Grid columns={2} gutter={24}>
-          {PERSONAS.map((persona) => (
+          {filteredPersonas.map((persona) => (
             <Card key={persona.name} className="relative overflow-hidden">
               <View className="absolute left-0 top-0 h-full w-1 bg-primary-500" />
               <CardHeader>
@@ -258,7 +357,7 @@ export default function BrandMemoryScreen() {
                     Goals
                   </Text>
                   <Text className="mt-1 text-sm text-ink-muted">
-                    Efficiency, Scale, Automation
+                    {persona.goals}
                   </Text>
                 </View>
               </CardContent>
@@ -274,6 +373,7 @@ export default function BrandMemoryScreen() {
             </Pressable>
           </Card>
         </Grid>
+        )
       )}
 
       {activeTab === 'competitors' && (

@@ -9,6 +9,7 @@ import {
   MessageCircle,
   MousePointerClick,
   Share2,
+  Search,
 } from 'lucide-react-native';
 import { Badge } from '../../src/components/ui/Badge';
 import { Button } from '../../src/components/ui/Button';
@@ -24,9 +25,28 @@ import { Gradient } from '../../src/components/ui/Gradient';
 import { PageHeader } from '../../src/components/ui/PageHeader';
 import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
+import { EmptyState } from '../../src/components/ui/EmptyState';
+import { ErrorState, Skeleton } from '../../src/components/ui/Skeleton';
+import { ResultCount } from '../../src/components/ui/ResultCount';
+import { SearchBar } from '../../src/components/ui/SearchBar';
 import { colors, iconColor } from '../../src/lib/theme';
+import { useAsync } from '../../src/hooks/useAsync';
+import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
+import { filterBySearch, normalize } from '../../src/lib/search';
+import { listTopContent } from '../../src/services/content/contentService';
+import type { Platform } from '../../src/types/content';
 
 const RANGES = ['Last 7 Days', 'Last 30 Days', 'Last Quarter', 'Year to Date'];
+const PLATFORM_LABELS: Record<Platform, string> = {
+  twitter: 'Twitter',
+  linkedin: 'LinkedIn',
+  instagram: 'Instagram',
+  email: 'Email',
+};
+
+function formatViews(views: number): string {
+  return views >= 1000 ? `${(views / 1000).toFixed(1)}k` : String(views);
+}
 
 const kpis = [
   {
@@ -65,13 +85,16 @@ const MONTHS = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
-const topContent = [
-  { title: '5 AI Tools for Design', views: '12.5k', platform: 'LinkedIn' },
-  { title: 'Remote Work Trends', views: '8.2k', platform: 'Twitter' },
-  { title: 'Product Launch Teaser', views: '5.1k', platform: 'Instagram' },
-];
-
 export default function AnalyticsScreen() {
+  const { data, loading, error, reload } = useAsync(listTopContent, []);
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query);
+  const topContent = data ?? [];
+  const filteredContent = filterBySearch(
+    topContent,
+    debouncedQuery,
+    (post) => [post.title, post.platform]
+  );
   // The web app used a native <select>; RN has no equivalent, so the range
   // picker is a segmented control.
   const [range, setRange] = useState(RANGES[0]);
@@ -209,12 +232,46 @@ export default function AnalyticsScreen() {
             <CardHeader className="px-5 pt-5">
               <CardTitle>Top Content</CardTitle>
             </CardHeader>
-            <CardContent>
-              {topContent.map((post, i) => (
+            <CardContent style={{ minHeight: 250 }}>
+              <View className="gap-2 px-4">
+                <SearchBar
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Search top content..."
+                />
+                <ResultCount
+                  count={filteredContent.length}
+                  total={topContent.length}
+                  active={normalize(query).length > 0}
+                />
+              </View>
+              {loading ? (
+                <View className="gap-2 p-4">
+                  <Skeleton height={48} />
+                  <Skeleton height={48} />
+                  <Skeleton height={48} />
+                </View>
+              ) : error ? (
+                <ErrorState onRetry={reload} />
+              ) : topContent.length === 0 ? (
+                <EmptyState
+                  icon={<BarChart3 size={24} color={iconColor.muted} />}
+                  title="Nothing here yet"
+                  description="Top-performing content will appear here."
+                />
+              ) : normalize(query).length > 0 && filteredContent.length === 0 ? (
+                <EmptyState
+                  icon={<Search size={24} color={iconColor.muted} />}
+                  title={`No results for "${query}"`}
+                  description="Try a different keyword or clear the search."
+                  actionLabel="Clear search"
+                  onAction={() => setQuery('')}
+                />
+              ) : filteredContent.map((post, i) => (
                 <View
-                  key={i}
+                  key={post.id}
                   className={
-                    i === topContent.length - 1
+                    i === filteredContent.length - 1
                       ? 'flex-row items-center justify-between p-4'
                       : 'flex-row items-center justify-between border-b border-surface-muted p-4'
                   }
@@ -227,12 +284,12 @@ export default function AnalyticsScreen() {
                       {post.title}
                     </Text>
                     <Text className="text-xs text-ink-subtle">
-                      {post.platform}
+                      {PLATFORM_LABELS[post.platform]}
                     </Text>
                   </View>
                   <View className="items-end">
                     <Text className="text-sm font-bold text-ink">
-                      {post.views}
+                      {formatViews(post.views)}
                     </Text>
                     <Text className="text-xs text-ink-subtle">views</Text>
                   </View>

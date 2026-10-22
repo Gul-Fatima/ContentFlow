@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import {
   AtSign,
@@ -23,6 +24,7 @@ import {
   Mail,
   Plus,
   Sparkles,
+  Search,
   Trash2,
 } from 'lucide-react-native';
 import { Badge } from '../../src/components/ui/Badge';
@@ -42,21 +44,17 @@ import { PageHeader } from '../../src/components/ui/PageHeader';
 import { StatCard } from '../../src/components/ui/StatCard';
 import { Tabs } from '../../src/components/ui/Tabs';
 import { Screen } from '../../src/components/layout/Screen';
+import { EmptyState } from '../../src/components/ui/EmptyState';
+import { ErrorState, Skeleton } from '../../src/components/ui/Skeleton';
+import { ResultCount } from '../../src/components/ui/ResultCount';
+import { SearchBar } from '../../src/components/ui/SearchBar';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
-
-type Platform = 'twitter' | 'instagram' | 'linkedin' | 'email';
-
-interface ScheduledPost {
-  id: string;
-  platform: Platform;
-  content: string;
-  time: string;
-  day: number; // 0-6 for Mon-Sun
-  hour: number; // 0-23
-  status: 'scheduled' | 'draft' | 'published' | 'failed';
-  goalTag?: string;
-}
+import { useAsync } from '../../src/hooks/useAsync';
+import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
+import { filterBySearch, normalize } from '../../src/lib/search';
+import { listScheduled } from '../../src/services/content/contentService';
+import type { Platform } from '../../src/types/content';
 
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const weekDates = [
@@ -104,114 +102,6 @@ const platformConfig: Record<
   },
 };
 
-const initialPosts: ScheduledPost[] = [
-  {
-    id: '1',
-    platform: 'twitter',
-    content:
-      '🚀 AI is changing how we work. Here are 3 ways to use AI as your creative partner...',
-    time: '9:00 AM',
-    day: 0,
-    hour: 9,
-    status: 'scheduled',
-    goalTag: 'Thought Leadership',
-  },
-  {
-    id: '2',
-    platform: 'linkedin',
-    content:
-      'Excited to announce our new Slack integration! Productivity just got a major upgrade. 📈',
-    time: '2:00 PM',
-    day: 2,
-    hour: 14,
-    status: 'scheduled',
-    goalTag: 'Product Launch',
-  },
-  {
-    id: '3',
-    platform: 'instagram',
-    content:
-      'Behind the scenes at our annual retreat! 🌲✨ Building the future takes a village...',
-    time: '5:00 PM',
-    day: 4,
-    hour: 17,
-    status: 'scheduled',
-    goalTag: 'Brand Awareness',
-  },
-  {
-    id: '4',
-    platform: 'email',
-    content: 'Subject: Your Weekly Social Performance Report 📊',
-    time: '8:00 AM',
-    day: 0,
-    hour: 8,
-    status: 'scheduled',
-    goalTag: 'Reporting',
-  },
-  {
-    id: '5',
-    platform: 'twitter',
-    content:
-      '5 underrated tools every social media manager needs in 2026. Thread 🧵👇',
-    time: '11:00 AM',
-    day: 1,
-    hour: 11,
-    status: 'draft',
-  },
-  {
-    id: '6',
-    platform: 'linkedin',
-    content:
-      'The ROI of AI in marketing: A data-driven breakdown of what actually works...',
-    time: '10:00 AM',
-    day: 3,
-    hour: 10,
-    status: 'scheduled',
-    goalTag: 'Thought Leadership',
-  },
-  {
-    id: '7',
-    platform: 'instagram',
-    content:
-      'New feature alert! 🎉 Introducing smart scheduling powered by AI...',
-    time: '12:00 PM',
-    day: 1,
-    hour: 12,
-    status: 'draft',
-  },
-  {
-    id: '8',
-    platform: 'twitter',
-    content:
-      'Hot take: The best social media strategy is the one you can actually maintain consistently.',
-    time: '3:00 PM',
-    day: 5,
-    hour: 15,
-    status: 'scheduled',
-  },
-  {
-    id: '9',
-    platform: 'linkedin',
-    content:
-      "We analyzed 10,000 LinkedIn posts. Here's what the top 1% do differently...",
-    time: '9:00 AM',
-    day: 4,
-    hour: 9,
-    status: 'scheduled',
-    goalTag: 'Thought Leadership',
-  },
-  {
-    id: '10',
-    platform: 'email',
-    content: 'Subject: New Feature: AI-Powered Content Calendar',
-    time: '10:00 AM',
-    day: 2,
-    hour: 10,
-    status: 'scheduled',
-    goalTag: 'Product Launch',
-  },
-];
-
 const bestTimes = [
   {
     platform: 'twitter' as Platform,
@@ -249,8 +139,12 @@ function formatHour(h: number) {
 }
 
 export default function SchedulerScreen() {
-  const [posts] = useState(initialPosts);
+  const { width } = useWindowDimensions();
+  const { data, loading, error, reload } = useAsync(listScheduled, []);
+  const posts = data ?? [];
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query);
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
   // The 7-column week grid doesn't fit a phone, so narrow screens start on the
   // list view and the week grid is horizontally scrollable when selected.
@@ -258,12 +152,23 @@ export default function SchedulerScreen() {
     Dimensions.get('window').width >= 1024 ? 'week' : 'list'
   );
 
-  const filteredPosts =
+  const tabFilteredPosts =
     activeFilter === 'all'
       ? posts
       : activeFilter === 'drafts'
         ? posts.filter((p) => p.status === 'draft')
         : posts.filter((p) => p.platform === activeFilter);
+  const filteredPosts = filterBySearch(
+    tabFilteredPosts,
+    debouncedQuery,
+    (post) => [
+      post.title,
+      platformConfig[post.platform].label,
+      post.status,
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][post.day],
+    ]
+  );
+  const isWide = width >= 768;
 
   const getPostsForSlot = (day: number, hour: number) =>
     filteredPosts.filter((p) => p.day === day && p.hour === hour);
@@ -306,6 +211,21 @@ export default function SchedulerScreen() {
             </Button>
           </>
         }
+      />
+
+      <View className={isWide ? 'items-end' : undefined}>
+        <View className={isWide ? 'w-full max-w-[360px]' : 'w-full'}>
+          <SearchBar
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search scheduled content..."
+          />
+        </View>
+      </View>
+      <ResultCount
+        count={filteredPosts.length}
+        total={tabFilteredPosts.length}
+        active={normalize(query).length > 0}
       />
 
       {/* Stats */}
@@ -372,7 +292,35 @@ export default function SchedulerScreen() {
       <View className="flex-col gap-6 lg:flex-row">
         {/* Calendar / list */}
         <View style={{ flex: 3 }}>
-          {viewMode === 'week' ? (
+          {loading ? (
+            <View className="gap-4">
+              <Skeleton height={320} />
+              <Skeleton height={120} />
+              <Skeleton height={120} />
+            </View>
+          ) : error ? (
+            <ErrorState onRetry={reload} />
+          ) : posts.length === 0 ? (
+            <EmptyState
+              icon={<Calendar size={24} color={iconColor.muted} />}
+              title="Nothing here yet"
+              description="Scheduled content will appear here when you add it."
+            />
+          ) : normalize(query).length > 0 && filteredPosts.length === 0 ? (
+            <EmptyState
+              icon={<Search size={24} color={iconColor.muted} />}
+              title={`No results for "${query}"`}
+              description="Try a different keyword or clear the search."
+              actionLabel="Clear search"
+              onAction={() => setQuery('')}
+            />
+          ) : filteredPosts.length === 0 ? (
+            <EmptyState
+              icon={<Calendar size={24} color={iconColor.muted} />}
+              title="No content for this filter"
+              description="Choose another platform or view all scheduled content."
+            />
+          ) : viewMode === 'week' ? (
             <View className="overflow-hidden rounded-lg border border-surface-border bg-white">
               {/* Week header */}
               <View className="flex-row items-center justify-between border-b border-surface-muted bg-surface-page px-4 py-3">
