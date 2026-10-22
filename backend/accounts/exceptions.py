@@ -71,6 +71,16 @@ def api_exception_handler(exc, context):
             status=status.HTTP_409_CONFLICT,
         )
 
+    # Feature apps (e.g. billing) declare their machine-readable code as
+    # `api_code` on an APIException, so the envelope stays uniform without this
+    # module importing them.
+    api_code = getattr(exc, 'api_code', None)
+    if isinstance(exc, APIException) and api_code:
+        return Response(
+            {'code': api_code, 'message': str(exc.detail)},
+            status=exc.status_code,
+        )
+
     if isinstance(exc, ValidationError):
         return Response(
             {

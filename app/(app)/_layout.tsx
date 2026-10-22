@@ -4,6 +4,7 @@ import { BottomTabBar } from '../../src/components/layout/BottomTabBar';
 import { Sidebar } from '../../src/components/layout/Sidebar';
 import { colors } from '../../src/lib/theme';
 import { SidebarProvider, useSidebar } from '../../src/context/SidebarContext';
+import { SubscriptionProvider } from '../../src/providers/SubscriptionProvider';
 
 function AppDrawer() {
   const { width } = useWindowDimensions();
@@ -51,6 +52,8 @@ function AppDrawer() {
       <Drawer.Screen name="pricing" />
       <Drawer.Screen name="profile" />
       <Drawer.Screen name="brand-setup" />
+      <Drawer.Screen name="billing/success" />
+      <Drawer.Screen name="billing/cancel" />
     </Drawer>
   );
 }
@@ -74,7 +77,10 @@ function AppShell() {
 export default function AppLayout() {
   return (
     <SidebarProvider>
-      <AppShell />
+      {/* One plan fetch per sign-in; every plan card reads this context. */}
+      <SubscriptionProvider>
+        <AppShell />
+      </SubscriptionProvider>
     </SidebarProvider>
   );
 }

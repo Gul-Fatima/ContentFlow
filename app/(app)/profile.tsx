@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Pressable, Switch, Text, View } from 'react-native';
+import {
+  Pressable,
+  Switch,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   AtSign,
   Bell,
@@ -8,6 +15,7 @@ import {
   Camera,
   Check,
   Clock,
+  CreditCard,
   ExternalLink,
   Globe,
   Key,
@@ -15,6 +23,7 @@ import {
   LogOut,
   MapPin,
   Pencil,
+  Receipt,
   Shield,
   Smartphone,
   User,
@@ -34,20 +43,46 @@ import { Grid } from '../../src/components/ui/Grid';
 import { Input } from '../../src/components/ui/Input';
 import { Tabs } from '../../src/components/ui/Tabs';
 import { Textarea } from '../../src/components/ui/Textarea';
+import { ErrorState, Skeleton } from '../../src/components/ui/Skeleton';
+import { PaymentFailedBanner } from '../../src/components/billing/PaymentFailedBanner';
 import { Screen } from '../../src/components/layout/Screen';
+import { ROUTES } from '../../src/constants/routes';
+import { ApiError } from '../../src/lib/api';
+import { formatCurrency, formatDate, formatLimit } from '../../src/lib/format';
+import { openInBrowser } from '../../src/lib/openExternal';
+import {
+  hasBillingAccount,
+  planName,
+  renewalLabel,
+  statusPill,
+  usagePercent,
+} from '../../src/lib/subscription';
 import { cn } from '../../src/lib/utils';
 import { colors, iconColor, palette, PLATFORM_COLORS } from '../../src/lib/theme';
+import { useAsync } from '../../src/hooks/useAsync';
 import { useCurrentUser } from '../../src/hooks/useCurrentUser';
 import { useLogout } from '../../src/hooks/useLogout';
+import { useManageBilling } from '../../src/hooks/useManageBilling';
+import { useSubscription } from '../../src/providers/SubscriptionProvider';
+import { listInvoices } from '../../src/services/billing/billingService';
+import type { Invoice } from '../../src/services/billing/types';
 
-type ProfileTab = 'general' | 'platforms' | 'notifications' | 'security';
+type ProfileTab =
+  | 'general'
+  | 'platforms'
+  | 'notifications'
+  | 'billing'
+  | 'security';
 
 const TABS: { id: ProfileTab; label: string }[] = [
   { id: 'general', label: 'General' },
   { id: 'platforms', label: 'Connected Platforms' },
   { id: 'notifications', label: 'Notifications' },
+  { id: 'billing', label: 'Billing' },
   { id: 'security', label: 'Security' },
 ];
+
+const TAB_IDS = TABS.map((tab) => tab.id);
 
 /** Brand icons were dropped from lucide 1.x. */
 const connectedPlatforms = [
@@ -147,12 +182,23 @@ const sessions = [
 ];
 
 export default function UserProfileScreen() {
-  const [activeTab, setActiveTab] = useState<ProfileTab>('general');
+  const params = useLocalSearchParams<{ tab?: string }>();
+  // A tap wins over the URL, so no effect is needed to keep them in sync:
+  // `/profile?tab=billing` lands on Billing, tapping another tab switches away.
+  const [selectedTab, setSelectedTab] = useState<ProfileTab | null>(null);
+  const paramTab =
+    typeof params.tab === 'string' && TAB_IDS.includes(params.tab as ProfileTab)
+      ? (params.tab as ProfileTab)
+      : null;
+  const activeTab: ProfileTab = selectedTab ?? paramTab ?? 'general';
+  const setActiveTab = setSelectedTab;
+
   const [isEditing, setIsEditing] = useState(false);
   const [prefs, setPrefs] = useState(initialPrefs);
 
   const { user, firstName, lastName, initials, company } = useCurrentUser();
   const { logout, isLoggingOut } = useLogout();
+  const { subscription } = useSubscription();
 
   const togglePref = (index: number) =>
     setPrefs((prev) =>
@@ -200,7 +246,11 @@ export default function UserProfileScreen() {
                   <Text className="text-2xl font-bold text-ink">
                     {user?.name ?? ''}
                   </Text>
-                  <Badge variant="primary">Pro</Badge>
+                  {subscription?.isActive ? (
+                    <Badge variant="primary">
+                      {planName(subscription.plan)}
+                    </Badge>
+                  ) : null}
                 </View>
                 <View className="flex-row flex-wrap items-center gap-4">
                   {company ? (
@@ -475,6 +525,8 @@ export default function UserProfileScreen() {
         </Card>
       )}
 
+      {activeTab === 'billing' && <BillingTab />}
+
       {activeTab === 'security' && (
         <View className="gap-6">
           <Card>
@@ -598,4 +650,254 @@ export default function UserProfileScreen() {
       )}
     </Screen>
   );
+}/**
+ * The Billing tab: real plan state and real invoices.
+ *
+ * Every value comes from the backend (`/api/billing/subscription` and
+ * `/api/billing/invoices`); nothing here can be satisfied by a local mock. When
+ * Stripe reports `past_due` the banner stays above both cards.
+ */
+function BillingTab() {
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+
+  const { subscription, loading, error, reload } = useSubscription();
+  const { manageBilling, isOpening, error: portalError } = useManageBilling();
+
+  const invoicesRequest = useAsync(listInvoices, []);
+  const invoices = invoicesRequest.data;
+  const invoicesLoading = invoicesRequest.loading;
+  const invoicesError =
+    invoicesRequest.error instanceof ApiError
+      ? invoicesRequest.error
+      : invoicesRequest.error
+        ? new ApiError(0, 'UNKNOWN', 'Could not load invoices.')
+        : null;
+
+  const pill = statusPill(subscription);
+  const billingAccount = hasBillingAccount(subscription);
+  const name = planName(subscription?.plan);
+  const intervalLabel =
+    subscription?.interval === 'year'
+      ? 'Billed yearly'
+      : subscription?.interval === 'month'
+        ? 'Billed monthly'
+        : '';
+  const renewal = renewalLabel(subscription);
+  const pastDue = subscription?.status === 'past_due';
+
+  return (
+    <View className="gap-6">
+      {pastDue ? <PaymentFailedBanner /> : null}
+
+      <Card>
+        <CardHeader>
+          <View className="flex-row items-center gap-2">
+            <CreditCard size={18} color={iconColor.muted} />
+            <CardTitle>Current plan</CardTitle>
+          </View>
+        </CardHeader>
+        <CardContent className="gap-4">
+          {loading ? (
+            <Skeleton height={96} />
+          ) : error ? (
+            <ErrorState
+              message="We couldn't load your plan."
+              onRetry={() => void reload()}
+            />
+          ) : (
+            <>
+              <View className="flex-row flex-wrap items-center gap-2">
+                <Text className="text-lg font-semibold text-ink">
+                  {billingAccount ? `${name} Plan` : 'No active plan'}
+                </Text>
+                {pill ? (
+                  <Badge variant={pill.tone}>{pill.label}</Badge>
+                ) : (
+                  <Badge variant="neutral">No plan</Badge>
+                )}
+              </View>
+
+              {billingAccount ? (
+                <Text className="text-sm text-ink-subtle">
+                  {[intervalLabel, renewal].filter(Boolean).join(' · ')}
+                </Text>
+              ) : (
+                <Text className="text-sm text-ink-subtle">
+                  Choose a plan to unlock AI content generation.
+                </Text>
+              )}
+
+              {billingAccount ? (
+                <View className="gap-4">
+                  <UsageLine
+                    label="Posts this period"
+                    used={subscription?.usage.postsUsed ?? 0}
+                    limit={subscription?.usage.postsLimit ?? null}
+                    barColor={colors.primary[500]}
+                  />
+                  <UsageLine
+                    label="AI credits"
+                    used={subscription?.usage.creditsUsed ?? 0}
+                    limit={subscription?.usage.creditsLimit ?? null}
+                    barColor={colors.success.DEFAULT}
+                  />
+                </View>
+              ) : null}
+
+              <View className="flex-row flex-wrap gap-3 pt-1">
+                <Button
+                  variant="primary"
+                  onPress={() => router.navigate(ROUTES.pricing)}
+                >
+                  Change plan
+                </Button>
+                {billingAccount ? (
+                  <Button
+                    variant="secondary"
+                    loading={isOpening}
+                    onPress={() => void manageBilling()}
+                  >
+                    Manage billing
+                  </Button>
+                ) : null}
+              </View>
+              {portalError ? (
+                <Text className="text-xs text-danger">{portalError}</Text>
+              ) : null}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card padding="none">
+        <CardHeader className="px-6 pb-5 pt-6">
+          <View className="flex-row items-center gap-2">
+            <Receipt size={18} color={iconColor.muted} />
+            <CardTitle>Billing history</CardTitle>
+          </View>
+        </CardHeader>
+        <CardContent>
+          {invoicesLoading ? (
+            <View className="gap-3 px-6 pb-6">
+              <Skeleton height={44} />
+              <Skeleton height={44} />
+            </View>
+          ) : invoicesError ? (
+            <View className="px-6 pb-6">
+              <ErrorState
+                message="We couldn't load your invoices."
+                onRetry={invoicesRequest.reload}
+              />
+            </View>
+          ) : !invoices || invoices.length === 0 ? (
+            <Text className="px-6 pb-6 text-sm text-ink-subtle">
+              No invoices yet. Invoices will appear here once you subscribe.
+            </Text>
+          ) : (
+            invoices.map((invoice, index) => (
+              <InvoiceRow
+                key={invoice.id}
+                invoice={invoice}
+                isMobile={isMobile}
+                isLast={index === invoices.length - 1}
+              />
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </View>
+  );
+}
+
+function InvoiceRow({
+  invoice,
+  isMobile,
+  isLast,
+}: {
+  invoice: Invoice;
+  isMobile: boolean;
+  isLast: boolean;
+}) {
+  const url = invoice.hostedInvoiceUrl;
+
+  return (
+    <View
+      className={cn(
+        'gap-2 px-6 py-4',
+        !isMobile && 'flex-row items-center justify-between gap-4',
+        !isLast && 'border-b border-surface-muted'
+      )}
+    >
+      <View className="flex-1 flex-row items-center gap-3">
+        <View className="h-9 w-9 items-center justify-center rounded-lg bg-surface-muted">
+          <Receipt size={16} color={iconColor.muted} />
+        </View>
+        <View className="flex-1">
+          <Text className="text-sm font-medium text-ink">
+            {invoice.number || 'Invoice'}
+          </Text>
+          <Text className="text-xs text-ink-subtle">
+            {formatDate(invoice.createdAt)}
+          </Text>
+        </View>
+      </View>
+
+      <View className="flex-row items-center gap-3 pl-12">
+        <InvoiceStatusBadge status={invoice.status} />
+        <Text className="text-sm font-semibold text-ink">
+          {formatCurrency(invoice.amountCents, invoice.currency)}
+        </Text>
+        {url ? (
+          <Pressable
+            onPress={() => void openInBrowser(url)}
+            accessibilityRole="link"
+            accessibilityLabel={`View invoice ${invoice.number}`}
+          >
+            <Text className="text-sm font-semibold text-primary-700">View</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+function UsageLine({
+  label,
+  used,
+  limit,
+  barColor,
+}: {
+  label: string;
+  used: number;
+  limit: number | null;
+  barColor: string;
+}) {
+  return (
+    <View>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-sm text-ink-muted">{label}</Text>
+        <Text className="text-sm font-bold text-ink">
+          {used.toLocaleString('en-US')} / {formatLimit(limit)}
+        </Text>
+      </View>
+      <View className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-muted">
+        <View
+          className="h-full rounded-full"
+          style={{
+            width: `${usagePercent(used, limit)}%`,
+            backgroundColor: barColor,
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
+function InvoiceStatusBadge({ status }: { status: string }) {
+  if (status === 'paid') return <Badge variant="success">Paid</Badge>;
+  if (status === 'open') return <Badge variant="warning">Open</Badge>;
+  const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : '—';
+  return <Badge variant="neutral">{label}</Badge>;
 }

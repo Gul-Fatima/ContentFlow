@@ -6,6 +6,9 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useRouter } from 'expo-router';
+import { ROUTES } from '../constants/routes';
+import { setUnauthorizedHandler } from '../lib/api';
 import * as authService from '../services/auth/authService';
 import type {
   Session,
@@ -34,6 +37,21 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  // A 401 from any feature API means the token is dead: clear the session and
+  // send the user to the welcome screen instead of leaving a broken shell.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setUser(null);
+      setStatus('unauthenticated');
+      void authService.signOut().catch(() => {
+        // Local state is already cleared; server revocation is best effort.
+      });
+      router.replace(ROUTES.welcome);
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [router]);
 
   useEffect(() => {
     let active = true;

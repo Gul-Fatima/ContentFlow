@@ -3,6 +3,7 @@ import { Modal, Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../ui/Avatar';
+import { PlanCard } from './PlanCard';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { useLogout } from '../../hooks/useLogout';
 import { ROUTES } from '../../constants/routes';
@@ -17,6 +18,13 @@ export function ProfileMenu({ size }: { size: 'xs' | 'md' }) {
   const openProfile = () => {
     setIsOpen(false);
     router.navigate(ROUTES.profile);
+  };
+
+  const openBilling = () => {
+    // The one plan/upgrade entry point in the menu; the pricing page owns the
+    // Checkout and Billing Portal flows.
+    setIsOpen(false);
+    router.navigate(ROUTES.pricing);
   };
 
   return (
@@ -56,12 +64,22 @@ export function ProfileMenu({ size }: { size: 'xs' | 'md' }) {
                 {user?.email ?? ''}
               </Text>
             </View>
+            <View className="py-2">
+              <PlanCard variant="compact" onNavigate={() => setIsOpen(false)} />
+            </View>
             <Pressable
               onPress={openProfile}
               accessibilityRole="button"
               className="rounded-md px-2 py-3 active:bg-surface-muted"
             >
               <Text className="text-sm text-ink">Profile</Text>
+            </Pressable>
+            <Pressable
+              onPress={openBilling}
+              accessibilityRole="button"
+              className="rounded-md px-2 py-3 active:bg-surface-muted"
+            >
+              <Text className="text-sm text-ink">Subscription &amp; billing</Text>
             </Pressable>
             <Pressable
               onPress={logout}

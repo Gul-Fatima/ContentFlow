@@ -19,6 +19,9 @@ export const ROUTES = {
   notifications: '/notifications',
   pricing: '/pricing',
   profile: '/profile',
+  /** Post-Checkout screens inside (app); both verify state with the backend. */
+  billingSuccess: '/billing/success',
+  billingCancel: '/billing/cancel',
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];

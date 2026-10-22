@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # Local
     'accounts',
+    'billing',
     'apps.core',
 ]
 
@@ -137,6 +138,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'auth': '10/min',
+        'billing': '20/min',
     },
     'EXCEPTION_HANDLER': 'accounts.exceptions.api_exception_handler',
 }
@@ -158,6 +160,28 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@contentflow.
 
 # Base URL of the Expo app, used to build password-reset links.
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8081').rstrip('/')
+
+# --- Billing (Stripe) -----------------------------------------------------
+# Hosted Checkout + Billing Portal only: card data never reaches this server.
+# Leaving STRIPE_SECRET_KEY empty keeps the API up; billing endpoints that need
+# Stripe then answer 503 PAYMENTS_NOT_CONFIGURED instead of crashing.
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+
+STRIPE_PRICE_STARTER_MONTHLY = os.environ.get('STRIPE_PRICE_STARTER_MONTHLY', '')
+STRIPE_PRICE_STARTER_YEARLY = os.environ.get('STRIPE_PRICE_STARTER_YEARLY', '')
+STRIPE_PRICE_PRO_MONTHLY = os.environ.get('STRIPE_PRICE_PRO_MONTHLY', '')
+STRIPE_PRICE_PRO_YEARLY = os.environ.get('STRIPE_PRICE_PRO_YEARLY', '')
+STRIPE_PRICE_ENTERPRISE_MONTHLY = os.environ.get('STRIPE_PRICE_ENTERPRISE_MONTHLY', '')
+STRIPE_PRICE_ENTERPRISE_YEARLY = os.environ.get('STRIPE_PRICE_ENTERPRISE_YEARLY', '')
+
+# Public origin of THIS API, used for Stripe's success/cancel redirects
+# (Stripe calls it from the customer's browser, so localhost is fine only in dev).
+PUBLIC_API_ORIGIN = os.environ.get('PUBLIC_API_ORIGIN', 'http://localhost:8000').rstrip('/')
+
+# Deep-link scheme of the Expo app (app.json "scheme"). Return URLs that start
+# with "<APP_SCHEME>://" are allowed, so native checkouts come back into the app.
+APP_SCHEME = os.environ.get('APP_SCHEME', 'agentai').strip()
 
 # --- Static files ---------------------------------------------------------
 STATIC_URL = 'static/'

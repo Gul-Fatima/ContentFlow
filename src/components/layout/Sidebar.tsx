@@ -11,11 +11,11 @@ import {
   ChevronRight,
   Crown,
   LogOut,
-  Sparkles,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Logo } from '../brand/Logo';
 import { Button } from '../ui/Button';
+import { PlanCard } from './PlanCard';
 import { BRAND } from '../../constants/brand';
 import { NAV_ITEMS } from '../../constants/nav';
 import { ROUTES, type AppRoute } from '../../constants/routes';
@@ -210,63 +210,7 @@ export function Sidebar({ navigation, collapsed }: SidebarProps) {
           className="border-t border-white/10 px-3 pt-3"
           style={{ paddingBottom: insets.bottom + 12 }}
         >
-          <View
-            className="rounded-2xl border bg-sidebar-card p-4"
-            style={{ borderColor: 'rgba(255,255,255,0.08)' }}
-          >
-            <View className="mb-3 flex-row items-center justify-between">
-              <View className="flex-row items-center gap-2">
-                <View className="h-6 w-6 items-center justify-center rounded-md bg-orange-500">
-                  <Crown size={12} color={colors.surface.card} />
-                </View>
-                <Text className="text-sm font-semibold text-white">
-                  Pro Plan
-                </Text>
-              </View>
-              <View
-                className="rounded-full px-2 py-0.5"
-                style={{ backgroundColor: 'rgba(16,185,129,0.15)' }}
-              >
-                <Text className="text-xs font-semibold text-success">
-                  Active
-                </Text>
-              </View>
-            </View>
-
-            <View className="mb-3">
-              <View className="flex-row justify-between">
-                <Text className="text-xs text-ink-faint">Posts used</Text>
-                <Text className="text-xs text-white">142 / 200</Text>
-              </View>
-              <View className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-muted">
-                <View
-                  className="h-full rounded-full"
-                  style={{ width: '71%', backgroundColor: colors.primary[500] }}
-                />
-              </View>
-            </View>
-
-            <View className="mb-4 flex-row justify-between">
-              <Text className="text-xs text-ink-faint">AI Credits</Text>
-              <Text className="text-xs text-white">8,420 left</Text>
-            </View>
-
-            <Pressable
-              onPress={() => go(ROUTES.pricing)}
-              accessibilityRole="button"
-              accessibilityLabel="Upgrade to Enterprise"
-              className="h-10 w-full flex-row items-center justify-center gap-2 rounded-lg bg-primary-600 active:bg-primary-500"
-            >
-              <Sparkles size={14} color={colors.surface.card} />
-              <Text className="text-xs font-semibold text-white">
-                Upgrade to Enterprise
-              </Text>
-            </Pressable>
-
-            <Text className="mt-2 text-center text-caption text-ink-subtle">
-              Renews in 18 days
-            </Text>
-          </View>
+          <PlanCard onNavigate={() => navigation.closeDrawer()} />
 
           {isDesktop && (
             <Pressable
