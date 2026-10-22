@@ -26,6 +26,9 @@ const FAKE_LATENCY_MS = 600;
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
+/** The most recent mock session, kept in memory so signOut can match its token. */
+let activeSession: { token: string; user: MockUser } | null = null;
+
 async function delay(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, FAKE_LATENCY_MS));
 }
@@ -42,10 +45,12 @@ async function readUsers(): Promise<MockUser[]> {
 }
 
 function toSession(user: MockUser): Session {
-  return {
+  const session: Session = {
     user: { id: user.id, name: user.name, email: user.email },
     token: randomUUID(),
   };
+  activeSession = { token: session.token, user };
+  return session;
 }
 
 export const mockAdapter: AuthAdapter = {
@@ -87,9 +92,10 @@ export const mockAdapter: AuthAdapter = {
     return toSession(found);
   },
 
-  async signOut(): Promise<void> {
+  async signOut(token?: string): Promise<void> {
     // Nothing server-side to revoke; the session lives in secure storage and is
     // cleared by authService.
+    if (!token || activeSession?.token === token) activeSession = null;
   },
 
   async requestPasswordReset(): Promise<{ sent: boolean; demo?: boolean }> {

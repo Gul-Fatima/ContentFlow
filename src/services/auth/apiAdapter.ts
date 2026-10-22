@@ -1,6 +1,7 @@
 import {
   AuthError,
   type AuthAdapter,
+  type AuthFieldErrors,
   type Session,
   type SignInInput,
   type SignUpInput,
@@ -8,22 +9,32 @@ import {
 } from './types';
 
 /**
- * Adapter for the Django REST backend in `backend/`.
+ * Adapter for the Django REST backend in `backend/` (see docs/AUTH_CONTRACT.md).
  *
- * Verified endpoints (backend/apps/core/urls.py):
- *   POST {base}/auth/register/  {username, password, email?} -> 201 {token, username}
- *   POST {base}/auth/token/     {username, password}         -> 200 {token}
+ *   POST {base}/auth/register        {name, email, password} -> 201 {user, token}
+ *   POST {base}/auth/login           {email, password}       -> 200 {user, token}
+ *   POST {base}/auth/logout          Token <key>             -> 204
+ *   GET  {base}/auth/me              Token <key>             -> 200 {user}
+ *   POST {base}/auth/password-reset  {email}                 -> 200 {sent: true}
  *
- * Notes:
- *  - The backend authenticates by `username`; the app treats the email address
- *    as the username (see docs/AUTH_CONTRACT.md).
- *  - DRF's token view answers 400 for bad credentials, so both 400 and 401 map
- *    to INVALID_CREDENTIALS.
- *  - The backend does not store a display name, and has no logout, /me or
- *    password-reset endpoint yet (TODOs below).
+ * Errors are always `{code, message, fields?}`; this adapter turns them into
+ * `AuthError`s the screens already know how to display.
  */
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
 const TIMEOUT_MS = 15_000;
+
+type JsonBody = Record<string, unknown>;
+
+interface RawResponse {
+  status: number;
+  body: JsonBody | null;
+}
+
+interface RequestOptions {
+  method?: 'GET' | 'POST';
+  payload?: Record<string, unknown>;
+  token?: string;
+}
 
 function baseUrl(): string {
   if (!BASE_URL) {
@@ -32,113 +43,187 @@ function baseUrl(): string {
   return BASE_URL;
 }
 
-interface RawResponse {
-  status: number;
-  body: Record<string, unknown> | null;
-}
-
-async function postJson(
+async function request(
   path: string,
-  payload: Record<string, unknown>
+  { method = 'GET', payload, token }: RequestOptions = {}
 ): Promise<RawResponse> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (payload !== undefined) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Token ${token}`;
+
   try {
     const response = await fetch(`${baseUrl()}${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(payload),
+      method,
+      headers,
+      body: payload === undefined ? undefined : JSON.stringify(payload),
       signal: controller.signal,
     });
 
-    let body: Record<string, unknown> | null = null;
-    try {
-      body = (await response.json()) as Record<string, unknown>;
-    } catch {
-      body = null;
+    let body: JsonBody | null = null;
+    if (response.status !== 204) {
+      try {
+        body = (await response.json()) as JsonBody;
+      } catch {
+        body = null;
+      }
     }
     return { status: response.status, body };
   } catch (error) {
     if (error instanceof AuthError) throw error;
-    // AbortError, DNS failure, CORS rejection, offline: all NETWORK for the UI.
+    // AbortError (15s timeout), DNS failure, CORS rejection, offline.
     throw new AuthError('NETWORK', 'Network request failed.');
   } finally {
     clearTimeout(timer);
   }
 }
 
+function bodyString(body: JsonBody | null, key: string): string | undefined {
+  const value = body?.[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+function fieldErrors(body: JsonBody | null): AuthFieldErrors | undefined {
+  const raw = body?.fields;
+  if (!raw || typeof raw !== 'object') return undefined;
+
+  const fields: AuthFieldErrors = {};
+  Object.entries(raw as Record<string, unknown>).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      fields[key] = [value];
+      return;
+    }
+    if (Array.isArray(value)) {
+      const messages = value.filter((item): item is string => typeof item === 'string');
+      if (messages.length) fields[key] = messages;
+    }
+  });
+
+  return Object.keys(fields).length ? fields : undefined;
+}
+
+function toAuthError(status: number, body: JsonBody | null, fallback: string): AuthError {
+  const code = bodyString(body, 'code');
+  const message = bodyString(body, 'message') ?? fallback;
+
+  if (status === 429 || code === 'RATE_LIMITED') {
+    return new AuthError('RATE_LIMITED', message);
+  }
+  if (status === 409 || code === 'EMAIL_TAKEN') {
+    return new AuthError('EMAIL_TAKEN', message);
+  }
+  if (status === 401) {
+    return new AuthError('INVALID_CREDENTIALS', message);
+  }
+  if (code === 'VALIDATION' || status === 400) {
+    return new AuthError('VALIDATION', message, fieldErrors(body));
+  }
+  return new AuthError('UNKNOWN', message);
+}
+
+function parseUser(value: unknown): User | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const raw = value as Record<string, unknown>;
+  const id = typeof raw.id === 'string' ? raw.id : undefined;
+  const email = typeof raw.email === 'string' ? raw.email : undefined;
+  if (!id || !email) return null;
+
+  const user: User = {
+    id,
+    email,
+    name: typeof raw.name === 'string' && raw.name ? raw.name : email,
+  };
+  if (typeof raw.role === 'string' && raw.role) user.role = raw.role;
+  if (typeof raw.company === 'string' && raw.company) user.company = raw.company;
+  if (typeof raw.avatarUrl === 'string' && raw.avatarUrl) {
+    user.avatarUrl = raw.avatarUrl;
+  }
+  return user;
+}
+
+function parseSession(body: JsonBody | null): Session | null {
+  const token = bodyString(body, 'token');
+  const user = parseUser(body?.user);
+  return token && user ? { user, token } : null;
+}
+
 export const apiAdapter: AuthAdapter = {
   async signUp({ name, email, password }: SignUpInput): Promise<Session> {
-    const normalized = email.trim().toLowerCase();
-    const { status, body } = await postJson('/auth/register/', {
-      username: normalized,
-      email: normalized,
-      password,
+    const { status, body } = await request('/auth/register', {
+      method: 'POST',
+      payload: { name: name.trim(), email: email.trim().toLowerCase(), password },
     });
 
-    if (status === 201 && typeof body?.token === 'string') {
-      const username =
-        typeof body.username === 'string' ? body.username : normalized;
-      const user: User = {
-        // The API returns no numeric id; the username is the stable identifier.
-        id: username,
-        // Not persisted server-side yet — keep what the user typed for display.
-        name: name.trim() || username,
-        email: normalized,
-      };
-      return { user, token: body.token };
+    if (status === 201) {
+      const session = parseSession(body);
+      if (session) return session;
+      throw new AuthError('UNKNOWN', 'The server returned an unexpected response.');
     }
 
-    if (status === 409) throw new AuthError('EMAIL_TAKEN');
-    if (status === 400) {
-      const detail = JSON.stringify(body ?? {}).toLowerCase();
-      if (detail.includes('taken') || detail.includes('already')) {
-        throw new AuthError('EMAIL_TAKEN');
-      }
-      throw new AuthError('UNKNOWN', 'Registration was rejected by the server.');
-    }
-    throw new AuthError('UNKNOWN', `Unexpected status ${status}.`);
+    throw toAuthError(status, body, 'Registration failed. Please try again.');
   },
 
   async signIn({ email, password }: SignInInput): Promise<Session> {
-    const normalized = email.trim().toLowerCase();
-    const { status, body } = await postJson('/auth/token/', {
-      username: normalized,
-      password,
+    const { status, body } = await request('/auth/login', {
+      method: 'POST',
+      payload: { email: email.trim().toLowerCase(), password },
     });
 
-    if (status === 200 && typeof body?.token === 'string') {
-      const user: User = { id: normalized, name: normalized, email: normalized };
-      return { user, token: body.token };
+    if (status === 200) {
+      const session = parseSession(body);
+      if (session) return session;
+      throw new AuthError('UNKNOWN', 'The server returned an unexpected response.');
     }
 
-    if (status === 400 || status === 401) throw new AuthError('INVALID_CREDENTIALS');
-    if (status === 409) throw new AuthError('EMAIL_TAKEN');
-    throw new AuthError('UNKNOWN', `Unexpected status ${status}.`);
+    if (status === 401) {
+      throw new AuthError(
+        'INVALID_CREDENTIALS',
+        bodyString(body, 'message') ?? 'Incorrect email or password.'
+      );
+    }
+    throw toAuthError(status, body, 'Sign-in failed. Please try again.');
   },
 
-  async signOut(): Promise<void> {
-    // TODO(auth-contract): POST /auth/logout/ once the backend can revoke the
-    // DRF token. Until then sign-out is local-only (token discarded client-side)
-    // and the old token stays valid server-side.
-    baseUrl();
+  async signOut(token?: string): Promise<void> {
+    if (!token) return;
+    try {
+      await request('/auth/logout', { method: 'POST', token });
+    } catch {
+      // Offline or already-invalid token: local state is cleared by authService.
+    }
   },
 
-  async requestPasswordReset(): Promise<{ sent: boolean; demo?: boolean }> {
-    baseUrl();
-    // TODO(auth-contract): POST /auth/password-reset/ {email} -> {sent: true}.
-    // Not implemented because the backend has no such endpoint yet; never claim
-    // an email was sent.
-    throw new AuthError(
-      'NOT_CONFIGURED',
-      'Password reset is not available yet.'
-    );
+  async fetchUser(token: string): Promise<User> {
+    const { status, body } = await request('/auth/me', { token });
+
+    if (status === 200) {
+      const user = parseUser(body?.user);
+      if (user) return user;
+      throw new AuthError('UNKNOWN', 'The server returned an unexpected response.');
+    }
+
+    if (status === 401) {
+      throw new AuthError(
+        'UNAUTHENTICATED',
+        bodyString(body, 'message') ?? 'Your session has expired.'
+      );
+    }
+    throw toAuthError(status, body, 'Could not load your account.');
+  },
+
+  async requestPasswordReset(email: string): Promise<{ sent: boolean; demo?: boolean }> {
+    const { status, body } = await request('/auth/password-reset', {
+      method: 'POST',
+      payload: { email: email.trim().toLowerCase() },
+    });
+
+    if (status === 200) return { sent: true };
+    throw toAuthError(status, body, 'Password reset could not be requested.');
   },
 };
 
-/** Exported for docs/tests: the API base URL the adapter resolved. */
+/** Exported for docs: the API base URL the adapter resolved. */
 export const API_BASE_URL = BASE_URL;

@@ -44,6 +44,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!active) return;
         setUser(session?.user ?? null);
         setStatus(session ? 'authenticated' : 'unauthenticated');
+        if (!session) return;
+
+        // Refresh the cached profile in the background; rendering is not blocked
+        // on it. A 401 clears the session, a network error keeps the cached user.
+        authService
+          .refreshUser()
+          .then((refreshed) => {
+            if (!active) return;
+            if (refreshed) {
+              setUser(refreshed);
+            } else {
+              setUser(null);
+              setStatus('unauthenticated');
+            }
+          })
+          .catch(() => {
+            // Keep the local session; the next API call will surface auth issues.
+          });
       })
       .catch(() => {
         if (!active) return;

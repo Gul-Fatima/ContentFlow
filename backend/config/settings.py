@@ -1,19 +1,20 @@
-"""Django settings for the Agent.ai backend.
+"""Django settings for the ContentFlow backend.
 
-Every value that matters for deployment is configurable through environment
-variables (see .env.example). The app runs with zero configuration locally
-(SQLite + mock AI) and upgrades to Postgres + real Gemini by setting two env
-vars.
+Every value that matters for deployment comes from the environment (see
+.env.example). Local development works with zero configuration: DEBUG defaults
+to False, so a real SECRET_KEY is required unless you copy .env.example to .env
+and set DEBUG=True.
 """
 import os
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env if present (local development convenience)
+# Load .env if present (local development convenience).
 load_dotenv(BASE_DIR / '.env')
 
 
@@ -21,9 +22,18 @@ def env_list(name: str, default: str = '') -> list[str]:
     return [item.strip() for item in os.environ.get(name, default).split(',') if item.strip()]
 
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-only-insecure-secret-key')
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '*') or ['*']
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
+
+# Never fall back to a shared key in production: a missing SECRET_KEY is fatal
+# unless we are explicitly in local debug mode.
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-local-dev-only-key'
+    else:
+        raise ImproperlyConfigured('SECRET_KEY must be set when DEBUG is False.')
+
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,13 +47,14 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     # Local
+    'accounts',
     'apps.core',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,10 +84,30 @@ WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
 # --- Database -------------------------------------------------------------
-# Default: SQLite (zero-setup local dev).
-# Set DATABASE_URL to a Postgres URL for production / docker-compose.
+# Postgres is configured through POSTGRES_* (used by docker-compose). A
+# DATABASE_URL is still honoured for backwards compatibility. With neither set,
+# local development falls back to SQLite.
+POSTGRES_DB = os.environ.get('POSTGRES_DB', 'contentflow')
+POSTGRES_USER = os.environ.get('POSTGRES_USER', 'contentflow')
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'contentflow')
+POSTGRES_HOST = os.environ.get('POSTGRES_HOST', '')
+POSTGRES_PORT = os.environ.get('POSTGRES_PORT', '5432')
+
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
-if DATABASE_URL:
+
+if POSTGRES_HOST:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': POSTGRES_DB,
+            'USER': POSTGRES_USER,
+            'PASSWORD': POSTGRES_PASSWORD,
+            'HOST': POSTGRES_HOST,
+            'PORT': POSTGRES_PORT,
+            'CONN_MAX_AGE': 600,
+        }
+    }
+elif DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
 else:
     DATABASES = {
@@ -86,24 +117,47 @@ else:
         }
     }
 
+# --- Auth -----------------------------------------------------------------
+AUTH_USER_MODEL = 'accounts.User'
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
 # --- DRF ------------------------------------------------------------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
-    # MVP posture: reads are public, writes are open too so the demo works
-    # without auth. Harden this (IsAuthenticated) before real user data.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'auth': '10/min',
+    },
+    'EXCEPTION_HANDLER': 'accounts.exceptions.api_exception_handler',
 }
 
 # --- CORS -----------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = env_list(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173',
+    'http://localhost:8081,http://127.0.0.1:8081',
 )
+
+# --- Email ----------------------------------------------------------------
+# Console backend in debug mode; set EMAIL_BACKEND + SMTP settings in production.
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND') or (
+    'django.core.mail.backends.console.EmailBackend'
+    if DEBUG
+    else 'django.core.mail.backends.smtp.EmailBackend'
+)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@contentflow.local')
+
+# Base URL of the Expo app, used to build password-reset links.
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8081').rstrip('/')
 
 # --- Static files ---------------------------------------------------------
 STATIC_URL = 'static/'

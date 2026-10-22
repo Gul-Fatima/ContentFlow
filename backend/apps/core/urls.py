@@ -1,5 +1,4 @@
 from django.urls import include, path
-from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
 from apps.core import views
@@ -17,11 +16,5 @@ urlpatterns = [
     path('goals/generate/', views.generate_plan, name='generate-plan'),
     path('brand-memory/voice/', views.brand_voice, name='brand-voice'),
     path('brand-memory/query/', views.brand_query, name='brand-query'),
-    path('auth/register/', views.register, name='register'),
-    path('auth/token/', obtain_auth_token, name='login'),
     path('', include(router.urls)),
-    path('brand-memory/voice/', views.brand_voice, name='brand-voice'),
-    path('brand-memory/query/', views.brand_query, name='brand-query'),
-    path('auth/register/', views.register, name='register'),
-    path('auth/token/', obtain_auth_token, name='login'),
 ]

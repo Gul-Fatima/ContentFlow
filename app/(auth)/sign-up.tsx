@@ -12,7 +12,11 @@ import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
 import { ROUTES } from '../../src/constants/routes';
 import { useAuth } from '../../src/providers/AuthProvider';
-import { AUTH_IS_DEMO, authErrorMessage } from '../../src/services/auth/authService';
+import {
+  AUTH_IS_DEMO,
+  authErrorMessage,
+  authFieldErrors,
+} from '../../src/services/auth/authService';
 import { markPending } from '../../src/services/onboarding/onboardingService';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,6 +30,7 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [googleNotice, setGoogleNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -67,6 +72,7 @@ export default function SignUpScreen() {
     if (submitting) return;
     setSubmitAttempted(true);
     setError(null);
+    setServerErrors({});
 
     if (
       name.trim().length < 2 ||
@@ -91,7 +97,13 @@ export default function SignUpScreen() {
       await markPending(session.user.id);
       router.replace(ROUTES.onboarding);
     } catch (caught) {
-      setError(authErrorMessage(caught));
+      const fields = authFieldErrors(caught);
+      const hasFieldError = Boolean(
+        fields.name?.length || fields.email?.length || fields.password?.length
+      );
+      setServerErrors(fields);
+      // Field messages render inline; only fall back to a form-level error.
+      setError(hasFieldError ? null : authErrorMessage(caught));
     } finally {
       setSubmitting(false);
     }
@@ -139,9 +151,10 @@ export default function SignUpScreen() {
               onChangeText={(value) => {
                 setName(value);
                 setError(null);
+                setServerErrors({});
               }}
               onBlur={() => setTouched((value) => ({ ...value, name: true }))}
-              error={fieldErrors.name}
+              error={fieldErrors.name ?? serverErrors.name?.[0]}
               placeholder="e.g. Alex Morgan"
               autoComplete="name"
               textContentType="name"
@@ -161,9 +174,10 @@ export default function SignUpScreen() {
               onChangeText={(value) => {
                 setEmail(value);
                 setError(null);
+                setServerErrors({});
               }}
               onBlur={() => setTouched((value) => ({ ...value, email: true }))}
-              error={fieldErrors.email}
+              error={fieldErrors.email ?? serverErrors.email?.[0]}
               placeholder="alex@company.com"
               autoCapitalize="none"
               autoComplete="email"
@@ -185,11 +199,12 @@ export default function SignUpScreen() {
               onChangeText={(value) => {
                 setPassword(value);
                 setError(null);
+                setServerErrors({});
               }}
               onBlur={() =>
                 setTouched((value) => ({ ...value, password: true }))
               }
-              error={fieldErrors.password}
+              error={fieldErrors.password ?? serverErrors.password?.[0]}
               placeholder="Create a strong password"
               autoCapitalize="none"
               autoComplete="new-password"

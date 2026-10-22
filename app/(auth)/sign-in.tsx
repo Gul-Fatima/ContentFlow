@@ -12,7 +12,11 @@ import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
 import { ROUTES } from '../../src/constants/routes';
 import { useAuth } from '../../src/providers/AuthProvider';
-import { AUTH_IS_DEMO, authErrorMessage } from '../../src/services/auth/authService';
+import {
+  AUTH_IS_DEMO,
+  authErrorMessage,
+  authFieldErrors,
+} from '../../src/services/auth/authService';
 import { getPostAuthRoute } from '../../src/services/onboarding/onboardingService';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,6 +27,7 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [googleNotice, setGoogleNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -45,6 +50,7 @@ export default function SignInScreen() {
     if (submitting) return;
     setSubmitAttempted(true);
     setError(null);
+    setServerErrors({});
 
     if (!EMAIL_PATTERN.test(email.trim())) return;
     if (!password) return;
@@ -54,7 +60,13 @@ export default function SignInScreen() {
       const session = await signIn({ email: email.trim(), password, remember });
       router.replace(await getPostAuthRoute(session.user.id));
     } catch (caught) {
-      setError(authErrorMessage(caught));
+      const fields = authFieldErrors(caught);
+      const hasFieldError = Boolean(
+        fields.email?.length || fields.password?.length
+      );
+      setServerErrors(fields);
+      // Field messages render inline; only fall back to a form-level error.
+      setError(hasFieldError ? null : authErrorMessage(caught));
     } finally {
       setSubmitting(false);
     }
@@ -102,9 +114,10 @@ export default function SignInScreen() {
             onChangeText={(value) => {
               setEmail(value);
               setError(null);
+              setServerErrors({});
             }}
             onBlur={() => setTouched((value) => ({ ...value, email: true }))}
-            error={emailError}
+            error={emailError ?? serverErrors.email?.[0]}
             placeholder="alex@company.com"
             autoCapitalize="none"
             autoComplete="email"
@@ -121,11 +134,12 @@ export default function SignInScreen() {
             onChangeText={(value) => {
               setPassword(value);
               setError(null);
+              setServerErrors({});
             }}
             onBlur={() =>
               setTouched((value) => ({ ...value, password: true }))
             }
-            error={passwordError}
+            error={passwordError ?? serverErrors.password?.[0]}
             placeholder="Enter your password"
             autoCapitalize="none"
             autoComplete="current-password"
