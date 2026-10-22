@@ -232,7 +232,8 @@ export default function AnalyticsScreen() {
             <CardHeader className="px-5 pt-5">
               <CardTitle>Top Content</CardTitle>
             </CardHeader>
-            <CardContent style={{ minHeight: 250 }}>
+            {/* Fixed height so the card doesn't jump as rows are filtered. */}
+            <CardContent style={{ minHeight: 276 }}>
               <View className="gap-2 px-4">
                 <SearchBar
                   value={query}
@@ -261,6 +262,7 @@ export default function AnalyticsScreen() {
                 />
               ) : normalize(query).length > 0 && filteredContent.length === 0 ? (
                 <EmptyState
+                  className="py-2"
                   icon={<Search size={24} color={iconColor.muted} />}
                   title={`No results for "${query}"`}
                   description="Try a different keyword or clear the search."
